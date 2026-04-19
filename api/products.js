@@ -30,7 +30,7 @@ function mergeQuery(req) {
 function clampLimit(v) {
   const n = parseInt(String(v), 10);
   if (Number.isNaN(n) || n < 1) return 48;
-  return Math.min(n, 100);
+  return Math.min(n, 200);
 }
 
 function clampOffset(v) {

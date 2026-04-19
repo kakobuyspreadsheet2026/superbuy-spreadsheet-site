@@ -1,5 +1,12 @@
 const ML_PRODUCT = "https://maisonlooks.com/zh/p/";
+/** Default batch size on the standalone products page. */
 const PAGE_LIMIT = 48;
+/** First batch on the homepage (image grid): show more items per load. */
+const PAGE_LIMIT_HOME = 200;
+
+function pageLimit() {
+  return document.body?.classList.contains("page-home") ? PAGE_LIMIT_HOME : PAGE_LIMIT;
+}
 
 const state = {
   offset: 0,
@@ -150,8 +157,9 @@ async function loadPage() {
   if (btn) btn.disabled = true;
   if (status) status.textContent = "Loading…";
 
+  const limit = pageLimit();
   const params = new URLSearchParams({
-    limit: String(PAGE_LIMIT),
+    limit: String(limit),
     offset: String(state.offset),
   });
   if (state.category) params.set("category", state.category);
@@ -207,7 +215,7 @@ async function loadPage() {
 
     state.offset += items.length;
 
-    if (items.length < PAGE_LIMIT || (state.total != null && state.offset >= state.total)) {
+    if (items.length < limit || (state.total != null && state.offset >= state.total)) {
       state.done = true;
       if (btn) btn.hidden = true;
     } else if (btn) {
