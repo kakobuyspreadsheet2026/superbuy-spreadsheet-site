@@ -67,6 +67,45 @@ function pruneApiFetchCache() {
 }
 
 /**
+ * Lower = earlier in nav. Shoes & apparel first, then bags/accessories, then rest.
+ * Heuristic on slug + display name (EN + ZH patterns).
+ */
+function categoryApparelRank(c) {
+  var raw = String(c.slug || "") + " " + String(c.name || "");
+  var s = raw.toLowerCase();
+  // Chinese labels (API may return ZH names)
+  if (/鞋|靴|拖|帆布鞋|运动鞋|凉鞋|皮鞋|球鞋|拖鞋|乐福|高跟|平底/.test(raw)) return 0;
+  if (
+    /服|装|衣|裤|裙|衫|袄|袜|帽|内衣|外套|卫衣|夹克|大衣|棉衣|羽绒|童装|男装|女装|服饰|衣着|针织|西装|礼服|泳装|运动服/.test(raw)
+  )
+    return 1;
+  if (
+    /shoe|sneaker|footwear|boot|sandal|slipper|trainer|clog|loafer|heel|mule|slide|pump|oxford|derby/.test(
+      s,
+    )
+  )
+    return 0;
+  if (
+    /cloth|apparel|mens|womens|kid|wear|hoodie|jacket|coat|sweater|shirt|pant|denim|dress|skirt|underwear|active|athletic|street|top|bottom|outerwear|knit|suit|uniform|lingerie|swim|tee|polo|cargo|short|legging|sock|intimate|outer|fleece|cardigan|blazer|vest|tank|blouse|knitwear|jersey|tracksuit|sportswear/.test(
+      s,
+    )
+  )
+    return 1;
+  if (/bag|backpack|handbag|wallet|belt|scarf|glove|accessor|hat|cap|beanie|jewel|watch|sunglass|eyewear|tie|bowtie/.test(s))
+    return 2;
+  return 50;
+}
+
+function sortCategoriesApparelFirst(list) {
+  return [...list].sort(function (a, b) {
+    var ra = categoryApparelRank(a);
+    var rb = categoryApparelRank(b);
+    if (ra !== rb) return ra - rb;
+    return String(a.name || a.slug).localeCompare(String(b.name || b.slug), undefined, { sensitivity: "base" });
+  });
+}
+
+/**
  * GET JSON from same-origin /api (or __API_ORIGIN__). Caches parsed result briefly to avoid duplicate work.
  * @param {string} pathOrUrl e.g. "/api/categories" or "/api/products?limit=48&offset=0"
  */

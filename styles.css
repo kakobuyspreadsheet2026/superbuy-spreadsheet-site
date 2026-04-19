@@ -67,17 +67,13 @@ body {
 .topbar-cats {
   display: flex;
   align-items: stretch;
-  flex-wrap: nowrap;
-  gap: 0.2rem;
-  padding: 0.35rem max(var(--layout-pad-x), env(safe-area-inset-right)) 0.35rem
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.35rem 0.2rem;
+  padding: 0.45rem max(var(--layout-pad-x), env(safe-area-inset-right)) 0.45rem
     max(var(--layout-pad-x), env(safe-area-inset-left));
   background: #2c7a94;
   border-bottom: 1px solid #256b82;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
-  scroll-snap-type: x proximity;
 }
 
 .topbar-cats__link {
@@ -88,7 +84,6 @@ body {
   min-height: 2.75rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
-  scroll-snap-align: start;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: #fff;
@@ -635,6 +630,15 @@ body {
   font-size: 0.9rem;
   font-weight: 700;
   color: #2c7a94;
+}
+
+/* Scroll-to-load trigger (homepage; no Load more button) */
+.catalog-sentinel {
+  width: 100%;
+  height: 4px;
+  margin-top: 1rem;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .products-actions {

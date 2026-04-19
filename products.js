@@ -133,9 +133,7 @@ async function loadCategories() {
         : Array.isArray(data?.categories)
           ? data.categories
           : [];
-    const sorted = [...list].sort((a, b) =>
-      String(a.name || a.slug).localeCompare(String(b.name || b.slug)),
-    );
+    const sorted = sortCategoriesApparelFirst(list);
     for (const c of sorted) {
       const opt = document.createElement("option");
       opt.value = c.slug;
@@ -145,6 +143,15 @@ async function loadCategories() {
   } catch {
     sel.disabled = true;
   }
+}
+
+/** If the sentinel is still in view after a batch (short viewport), load again without waiting for scroll. */
+function maybePrefetchMoreHome() {
+  if (!document.body?.classList.contains("page-home") || state.done || state.loading) return;
+  const el = document.getElementById("catalog-sentinel");
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  if (rect.top < window.innerHeight + 480) loadPage();
 }
 
 async function loadPage() {
@@ -241,6 +248,9 @@ async function loadPage() {
   } finally {
     state.loading = false;
     if (btn && !state.done) btn.disabled = false;
+    if (document.body?.classList.contains("page-home") && !state.done) {
+      requestAnimationFrame(() => maybePrefetchMoreHome());
+    }
   }
 }
 
@@ -275,8 +285,10 @@ async function init() {
 
   const sel = document.getElementById("filter-cat");
   if (sel) sel.addEventListener("change", onFilterChange);
+
+  const isHome = document.body?.classList.contains("page-home");
   const btn = document.getElementById("load-more");
-  if (btn) btn.addEventListener("click", () => loadPage());
+  if (!isHome && btn) btn.addEventListener("click", () => loadPage());
 
   await loadCategories();
   if (sel && state.category) {
@@ -286,7 +298,21 @@ async function init() {
       syncCategoryUrl();
     }
   }
-  loadPage();
+  await loadPage();
+
+  if (isHome) {
+    const sentinel = document.getElementById("catalog-sentinel");
+    if (sentinel) {
+      new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) loadPage();
+          }
+        },
+        { root: null, rootMargin: "520px", threshold: 0 },
+      ).observe(sentinel);
+    }
+  }
 }
 
 init();
