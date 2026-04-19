@@ -12,7 +12,7 @@ updated_at: 2026-04-19
 
 1. Vercel → **Environment Variables**: `MATRIX_API_KEY` (Production + Preview).
 2. Routes: `/api/categories`, `/api/products`, `/api/outfits` are serverless proxies; the browser never sees the key.
-3. Pages: `index.html` (hero + category bar), `products.html` (catalog + `?category=`), `outfits.html` (outfits grid).
+3. Pages: `index.html` (hero + category bar + same catalog as products), `products.html` (standalone catalog + `?category=`), `outfits.html` (outfits grid).
 
 **Do not commit API keys.** GitHub 里只保留占位说明；真实密钥只放在下面两处之一，**永远不要**写进 `docs/` 或任何会 push 的文件。
 

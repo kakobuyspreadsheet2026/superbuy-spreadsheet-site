@@ -406,6 +406,11 @@ body {
   align-items: center;
 }
 
+/* Full-width catalog under centered hero hint */
+.main:has(.products-main) {
+  align-items: stretch;
+}
+
 @supports (padding: max(0px)) {
   .main {
     padding-bottom: max(4rem, calc(env(safe-area-inset-bottom) + 3rem));
