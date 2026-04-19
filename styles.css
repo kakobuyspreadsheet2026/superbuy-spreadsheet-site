@@ -438,6 +438,12 @@ body {
   margin-top: 0.5rem;
 }
 
+.main__hint--below-grid {
+  margin-top: 2rem;
+  margin-bottom: 0;
+  text-align: center;
+}
+
 .topbar-cats__loading,
 .topbar-cats__fallback {
   padding: 0.35rem 0.5rem;
@@ -456,6 +462,7 @@ body {
   margin: 0 auto;
   padding: 1.25rem max(var(--layout-pad-x), env(safe-area-inset-right)) 4rem
     max(var(--layout-pad-x), env(safe-area-inset-left));
+  scroll-margin-top: 5rem;
 }
 
 .products-toolbar {

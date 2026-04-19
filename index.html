@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="theme-color" content="#ffffff" />
-    <title>The best spreadsheet 2026</title>
+    <title>The best spreadsheet 2026 · All products</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -89,7 +89,7 @@
         </div>
         <nav class="topbar__nav" aria-label="Primary">
           <a class="topbar__link" href="#top">Home</a>
-          <a class="topbar__link" href="products.html">Products</a>
+          <a class="topbar__link" href="#catalog">Products</a>
           <a class="topbar__link" href="outfits.html">Outfits</a>
         </nav>
       </div>
@@ -114,10 +114,32 @@
       </div>
     </section>
 
-    <main class="main">
-      <p class="main__hint">
-        Pick a category above or open the full catalog. Data comes from the MaisonLooks public API (via secure server proxy).
-        <a class="main__hint-link" href="products.html">Browse all products</a>
+    <main class="products-main" id="catalog">
+      <div class="products-toolbar">
+        <h1 class="products-main__title">All products</h1>
+        <div class="products-toolbar__row">
+          <label class="products-filter">
+            <span class="products-filter__label">Category</span>
+            <select id="filter-cat" class="products-filter__select" aria-label="Filter by category">
+              <option value="">All categories</option>
+            </select>
+          </label>
+        </div>
+        <p class="products-toolbar__note">
+          <strong>All categories</strong> interleaves products across every category (round-robin), similar to MaisonLooks “全部商品”—not one full category at a time.
+          <strong>48 per page</strong>; use <strong>Load more</strong> for the next batch, or pick one category to browse that category only.
+        </p>
+      </div>
+
+      <p id="products-status" class="products-status" role="status"></p>
+
+      <div id="product-grid" class="product-grid"></div>
+
+      <div class="products-actions">
+        <button type="button" id="load-more" class="products-load-more">Load more</button>
+      </div>
+
+      <p class="main__hint main__hint--below-grid">
         <a class="main__hint-link" href="outfits.html">View outfits</a>
       </p>
     </main>
@@ -138,5 +160,6 @@
     </script>
     <script src="api-parse.js"></script>
     <script src="index.js" defer></script>
+    <script src="products.js" defer></script>
   </body>
 </html>
