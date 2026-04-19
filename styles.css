@@ -87,6 +87,25 @@ body {
   position: relative;
 }
 
+.topbar-cats__group-label {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  padding: 0.25rem 0.35rem 0.25rem 0.15rem;
+  margin-right: 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.topbar-cats__group-label + .topbar-cats__link {
+  margin-left: 0;
+}
+
 .topbar-cats__more {
   position: relative;
   flex: 0 0 auto;

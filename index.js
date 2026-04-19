@@ -34,7 +34,9 @@ async function initTopbarCategories() {
     const sorted = sortCategoriesApparelFirst(list);
     let primary = sorted.filter(isShoeClothingCategory);
     let more = sorted.filter((c) => !isShoeClothingCategory(c));
+    let useFallbackFlat = false;
     if (primary.length === 0 && more.length > 0) {
+      useFallbackFlat = true;
       primary = sorted;
       more = [];
     }
@@ -47,11 +49,39 @@ async function initTopbarCategories() {
       container.appendChild(a);
     }
 
+    function sortByName(arr) {
+      return [...arr].sort((a, b) =>
+        String(a.name || a.slug).localeCompare(String(b.name || b.slug), undefined, {
+          sensitivity: "base",
+        }),
+      );
+    }
+
     const primaryRow = document.createElement("div");
     primaryRow.className = "topbar-cats__primary";
 
-    for (const c of primary) {
-      appendCatLink(primaryRow, c);
+    if (useFallbackFlat) {
+      for (const c of primary) {
+        appendCatLink(primaryRow, c);
+      }
+    } else {
+      const shoes = sortByName(primary.filter((c) => categoryApparelRank(c) === 0));
+      const clothes = sortByName(primary.filter((c) => categoryApparelRank(c) === 1));
+
+      function appendGroup(labelText, cats) {
+        if (!cats.length) return;
+        const lab = document.createElement("span");
+        lab.className = "topbar-cats__group-label";
+        lab.setAttribute("role", "presentation");
+        lab.textContent = labelText;
+        primaryRow.appendChild(lab);
+        for (const c of cats) {
+          appendCatLink(primaryRow, c);
+        }
+      }
+
+      appendGroup("鞋类", shoes);
+      appendGroup("服装", clothes);
     }
 
     if (more.length > 0) {
