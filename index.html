@@ -89,6 +89,7 @@
         </div>
         <nav class="topbar__nav" aria-label="Primary">
           <a class="topbar__link" href="#top">Home</a>
+          <a class="topbar__link" href="#api-handoff">API</a>
         </nav>
       </div>
 
@@ -127,6 +128,104 @@
       <p class="main__hint">
         Click on the category to view details. This way, it is presented in a website format, which is more convenient.
       </p>
+
+      <section class="api-handoff" id="api-handoff" aria-labelledby="api-handoff-title">
+        <h2 class="api-handoff__title" id="api-handoff-title">MaisonLooks Public API</h2>
+        <p class="api-handoff__meta">
+          Handoff for static / build-time use · <code>v1</code> · updated 2026-04-19
+        </p>
+
+        <div class="api-handoff__callout">
+          <strong>Important:</strong> Use the API only from <strong>server-side or build scripts</strong>. Do not put your API key in
+          browser JavaScript or public HTML. Rate limit: 300 req/min per IP.
+        </div>
+
+        <h3 class="api-handoff__h">Authentication</h3>
+        <ul class="api-handoff__list">
+          <li>Header: <code>X-API-Key: &lt;your key&gt;</code> (from env e.g. <code>MATRIX_API_KEY</code>)</li>
+          <li>Base URL: <code>https://api.maisonlooks.com</code></li>
+          <li>Version path: <code>/public/v1</code></li>
+        </ul>
+
+        <h3 class="api-handoff__h">Endpoints</h3>
+        <div class="api-handoff__table-wrap">
+          <table class="api-handoff__table">
+            <thead>
+              <tr>
+                <th scope="col">Method</th>
+                <th scope="col">Path</th>
+                <th scope="col">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>GET</code></td>
+                <td><code>/public/v1/categories</code></td>
+                <td>Categories with active products (<code>slug</code> matches site <code>/c/{slug}</code>)</td>
+              </tr>
+              <tr>
+                <td><code>GET</code></td>
+                <td><code>/public/v1/products</code></td>
+                <td>Query: <code>category</code>, <code>limit</code> (max 100), <code>offset</code></td>
+              </tr>
+              <tr>
+                <td><code>GET</code></td>
+                <td><code>/public/v1/products/{slug}</code></td>
+                <td>Single product; 404 if missing</td>
+              </tr>
+              <tr>
+                <td><code>GET</code></td>
+                <td><code>/public/v1/outfits</code></td>
+                <td>Query: <code>featured</code>, <code>limit</code>, <code>offset</code>, <code>productSlug</code></td>
+              </tr>
+              <tr>
+                <td><code>GET</code></td>
+                <td><code>/public/v1/outfits/{id}</code></td>
+                <td>Single outfit (shortId or UUID)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="api-handoff__h">Example (curl)</h3>
+        <pre class="api-handoff__pre" tabindex="0"><code>curl -H "X-API-Key: $MATRIX_API_KEY" \
+  "https://api.maisonlooks.com/public/v1/categories"</code></pre>
+
+        <h3 class="api-handoff__h">Slug aliases (common mistakes)</h3>
+        <div class="api-handoff__table-wrap">
+          <table class="api-handoff__table api-handoff__table--compact">
+            <thead>
+              <tr>
+                <th scope="col">Avoid</th>
+                <th scope="col">Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>shoes</code></td>
+                <td><code>sneakers</code></td>
+              </tr>
+              <tr>
+                <td><code>hoodies-sweaters</code></td>
+                <td><code>hoodies-sweatshirts</code></td>
+              </tr>
+              <tr>
+                <td><code>coats</code></td>
+                <td><code>outerwear</code></td>
+              </tr>
+              <tr>
+                <td><code>tees</code></td>
+                <td><code>t-shirts</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="api-handoff__note">
+          Validate slugs with <code>GET /public/v1/categories</code> before filtering products. Full handoff (fetch script, types, build
+          notes) is in the repo:
+          <a href="docs/maisonlooks-api-handoff.md">docs/maisonlooks-api-handoff.md</a>
+        </p>
+      </section>
     </main>
 
     <div class="fab-stack" aria-hidden="true">
