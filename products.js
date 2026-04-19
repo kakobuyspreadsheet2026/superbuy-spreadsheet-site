@@ -9,6 +9,20 @@ const state = {
   done: false,
 };
 
+/** Matches fetch-products.mjs + common paginated shapes. */
+function normalizeProductList(json) {
+  if (Array.isArray(json)) return json;
+  if (!json || typeof json !== "object") return [];
+  if (Array.isArray(json.data)) return json.data;
+  if (Array.isArray(json.products)) return json.products;
+  if (Array.isArray(json.items)) return json.items;
+  if (Array.isArray(json.results)) return json.results;
+  if (json.data && typeof json.data === "object" && Array.isArray(json.data.items)) {
+    return json.data.items;
+  }
+  return [];
+}
+
 function formatPrice(p) {
   if (p.priceCny != null) return `¥${Number(p.priceCny).toFixed(0)}`;
   if (Array.isArray(p.priceCnyRange) && p.priceCnyRange.length === 2) {
@@ -116,7 +130,14 @@ async function loadPage() {
       return;
     }
 
-    const items = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
+    if (json && typeof json.error === "string" && json.error && !normalizeProductList(json).length) {
+      if (status) status.textContent = json.error;
+      state.done = true;
+      if (btn) btn.hidden = true;
+      return;
+    }
+
+    const items = normalizeProductList(json);
     const meta = json.meta || {};
     if (typeof meta.total === "number") state.total = meta.total;
 
@@ -148,7 +169,14 @@ async function loadPage() {
       }
     }
   } catch (e) {
-    if (status) status.textContent = String(e.message || e);
+    const msg = String(e.message || e);
+    const hint =
+      /failed to fetch|load failed|networkerror/i.test(msg) && window.location.protocol === "file:"
+        ? " Open this site over HTTP (e.g. vercel dev or your deployed URL); file:// cannot call /api."
+        : /failed to fetch|load failed|networkerror/i.test(msg)
+          ? " Check that /api/products is available (Vercel env MATRIX_API_KEY, or run vercel dev)."
+          : "";
+    if (status) status.textContent = msg + hint;
     state.done = true;
     if (btn) btn.hidden = true;
   } finally {

@@ -1,6 +1,20 @@
 /**
  * Proxies GET /public/v1/products?category=&limit=&offset=
  */
+function mergeQuery(req) {
+  const q = { ...(req.query || {}) };
+  const urlStr = req.url || "";
+  try {
+    const u = new URL(urlStr, "http://localhost");
+    u.searchParams.forEach((v, k) => {
+      if (q[k] == null || q[k] === "") q[k] = v;
+    });
+  } catch (_) {
+    /* ignore */
+  }
+  return q;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
@@ -13,8 +27,8 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const q = mergeQuery(req);
   const sp = new URLSearchParams();
-  const q = req.query || {};
   if (q.category) sp.set("category", String(q.category));
   sp.set("limit", q.limit != null ? String(q.limit) : "48");
   sp.set("offset", q.offset != null ? String(q.offset) : "0");
@@ -30,9 +44,16 @@ module.exports = async function handler(req, res) {
     try {
       body = JSON.parse(text);
     } catch {
-      body = { error: "Invalid JSON from upstream", raw: text.slice(0, 200) };
+      res
+        .status(502)
+        .json({ error: "Invalid JSON from upstream", raw: text.slice(0, 400) });
+      return;
     }
-    res.status(r.status).json(body);
+    if (!r.ok) {
+      res.status(r.status).json(body);
+      return;
+    }
+    res.status(200).json(body);
   } catch (e) {
     res.status(502).json({ error: String(e.message || e) });
   }
