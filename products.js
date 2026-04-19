@@ -67,29 +67,39 @@ function cardEl(p) {
     img.classList.add("product-card__img--placeholder");
   };
 
-  const body = document.createElement("div");
-  body.className = "product-card__body";
-
-  if (p.brand) {
-    const brand = document.createElement("div");
-    brand.className = "product-card__brand";
-    brand.textContent = p.brand;
-    body.appendChild(brand);
+  const imageOnly = document.body?.classList.contains("page-home");
+  if (imageOnly) {
+    a.classList.add("product-card--image-only");
+    const bits = [p.title || p.slug, p.brand, formatPrice(p)].filter(Boolean);
+    a.setAttribute("aria-label", bits.join(" · "));
   }
 
-  const title = document.createElement("div");
-  title.className = "product-card__title";
-  title.textContent = p.title || p.slug;
-
-  const price = document.createElement("div");
-  price.className = "product-card__price";
-  price.textContent = formatPrice(p);
-
-  body.appendChild(title);
-  body.appendChild(price);
-
   a.appendChild(img);
-  a.appendChild(body);
+
+  if (!imageOnly) {
+    const body = document.createElement("div");
+    body.className = "product-card__body";
+
+    if (p.brand) {
+      const brand = document.createElement("div");
+      brand.className = "product-card__brand";
+      brand.textContent = p.brand;
+      body.appendChild(brand);
+    }
+
+    const title = document.createElement("div");
+    title.className = "product-card__title";
+    title.textContent = p.title || p.slug;
+
+    const price = document.createElement("div");
+    price.className = "product-card__price";
+    price.textContent = formatPrice(p);
+
+    body.appendChild(title);
+    body.appendChild(price);
+    a.appendChild(body);
+  }
+
   return a;
 }
 

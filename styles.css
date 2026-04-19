@@ -464,6 +464,15 @@ body {
   scroll-margin-top: 5rem;
 }
 
+.products-main--home {
+  padding-top: 0.5rem;
+}
+
+/* Home: image-only tiles (no title/price under thumbnail) */
+.product-card--image-only .product-card__img {
+  border-radius: 10px;
+}
+
 .products-toolbar {
   margin-bottom: 1rem;
 }

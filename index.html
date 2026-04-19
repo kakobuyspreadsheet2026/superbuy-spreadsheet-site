@@ -16,7 +16,7 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="page-home">
     <header class="site-header">
       <div class="topbar">
         <a class="topbar__logo" href="#top">The best spreadsheet 2026</a>
@@ -116,31 +116,13 @@
 
     <main class="main">
       <p class="main__hint">
-        Pick a category above or use the filter below. Data comes from the MaisonLooks public API (via secure server proxy).
-        <a class="main__hint-link" href="#catalog">Jump to all products</a>
+        Pick a category above to filter this grid. For filters and full copy, open the products page. Data comes from the MaisonLooks public API (via secure server proxy).
+        <a class="main__hint-link" href="#catalog">Jump to products</a>
         <a class="main__hint-link" href="products.html">Open products page</a>
         <a class="main__hint-link" href="outfits.html">View outfits</a>
       </p>
 
-      <section class="products-main" id="catalog">
-        <div class="products-toolbar">
-          <h2 class="products-main__title">All products</h2>
-          <div class="products-toolbar__row">
-            <label class="products-filter">
-              <span class="products-filter__label">Category</span>
-              <select id="filter-cat" class="products-filter__select" aria-label="Filter by category">
-                <option value="">All categories</option>
-              </select>
-            </label>
-          </div>
-          <p class="products-toolbar__note">
-            <strong>All categories</strong> interleaves products across every category (round-robin), similar to MaisonLooks “全部商品”—not one full category at a time.
-            <strong>48 per page</strong>; use <strong>Load more</strong> for the next batch, or pick one category to browse that category only.
-          </p>
-        </div>
-
-        <p id="products-status" class="products-status" role="status"></p>
-
+      <section class="products-main products-main--home" id="catalog">
         <div id="product-grid" class="product-grid"></div>
 
         <div class="products-actions">
