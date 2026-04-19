@@ -1,7 +1,7 @@
 const ML_PRODUCT = "https://maisonlooks.com/zh/p/";
 /** Default batch size on the standalone products page. */
 const PAGE_LIMIT = 48;
-/** Homepage image grid: fixed cap; “查看更多” links to the full catalog page. */
+/** Homepage image grid: fixed cap; “View more” links to MaisonLooks /zh/products. */
 const HOME_GRID_MAX_ITEMS = 200;
 /** Homepage does not call /api/products — only /initial-products.json (+ localStorage). */
 const PAGE_LIMIT_HOME = 100;
@@ -282,7 +282,7 @@ async function hydrateInitialProducts() {
 
 async function loadPage() {
   if (state.loading || state.done) return;
-  /** Home grid is 100% seed JSON only; /api/products runs on /products (View more). */
+  /** Home grid is 100% seed JSON only; /api/products is used on /products, not on /. */
   if (document.body?.classList.contains("page-home")) return;
 
   state.loading = true;
@@ -437,7 +437,7 @@ async function init() {
           "Homepage products load from /initial-products.json only (no API here). Run npm run seed-products with SEED_API_URL or commit public/initial-products.json, then redeploy. Or open the full catalog.";
       } else {
         emptyEl.innerHTML =
-          'Preview couldn’t load. <a href="/products">Open the full catalog</a> for the live list.';
+          'Preview couldn’t load. <a href="https://maisonlooks.com/zh/products" target="_blank" rel="noopener noreferrer">Open MaisonLooks all products</a>.';
       }
     }
   } else {
