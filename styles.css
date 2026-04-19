@@ -477,6 +477,19 @@ body {
   gap: 0.75rem;
 }
 
+.products-toolbar__note {
+  margin: 0.65rem 0 0;
+  max-width: 42rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.products-toolbar__note strong {
+  color: #475569;
+  font-weight: 600;
+}
+
 .products-filter {
   display: flex;
   flex-direction: column;
