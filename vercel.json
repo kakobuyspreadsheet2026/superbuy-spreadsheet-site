@@ -4,6 +4,11 @@
   "outputDirectory": ".",
   "trailingSlash": false,
   "rewrites": [
+    {
+      "source": "/initial-products.json",
+      "destination": "/public/initial-products.json"
+    },
+    { "source": "/favicon.png", "destination": "/public/favicon.png" },
     { "source": "/acbuy", "destination": "/acbuy.html" },
     { "source": "/allchinabuy", "destination": "/allchinabuy.html" },
     { "source": "/basetao", "destination": "/basetao.html" },

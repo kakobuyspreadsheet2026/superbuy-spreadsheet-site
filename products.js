@@ -8,7 +8,7 @@ const PAGE_LIMIT_HOME = 100;
 /** Homepage: first N cards use eager images + fetchPriority high (~2 rows × 6 cols at lg). */
 const HOME_EAGER_IMAGE_COUNT = 12;
 /** localStorage mirror of seed JSON (repeat visits skip network when fresh). */
-const HOME_SEED_CACHE_KEY = "ml_initial_products_seed_v1";
+const HOME_SEED_CACHE_KEY = "ml_initial_products_seed_v2";
 const HOME_SEED_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function pageLimit() {
@@ -230,9 +230,19 @@ async function hydrateInitialProducts() {
   if (!json) {
     json = readHomeSeedCache();
   }
+  if (json && !normalizeProductList(json).length) {
+    try {
+      localStorage.removeItem(HOME_SEED_CACHE_KEY);
+    } catch {
+      /* */
+    }
+    json = null;
+  }
   if (!json) {
     try {
-      const r = await fetch("/initial-products.json", { cache: "force-cache" });
+      /** Static hosts keep files under public/ → URL is /public/… ; root /initial-products.json needs a Vercel rewrite (see vercel.json). */
+      let r = await fetch("/initial-products.json", { cache: "no-cache" });
+      if (!r.ok) r = await fetch("/public/initial-products.json", { cache: "no-cache" });
       if (r.ok) {
         json = await r.json();
         writeHomeSeedCache(json);
