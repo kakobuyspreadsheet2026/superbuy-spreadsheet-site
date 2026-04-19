@@ -388,6 +388,8 @@ def page_html(slug: str, name: str) -> str:
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#e9eff8" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="description" content="{meta_desc}" />
     <meta name="keywords" content="{meta_keywords}" />
     <title>{page_title}</title>
