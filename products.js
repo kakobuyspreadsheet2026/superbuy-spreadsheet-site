@@ -97,7 +97,7 @@ async function loadCategories() {
   const sel = document.getElementById("filter-cat");
   if (!sel) return;
   try {
-    const r = await fetch("/api/categories");
+    const r = await fetch(apiUrl("/api/categories"));
     const parsed = await readApiJson(r);
     if (parsed.bodyError) {
       sel.disabled = true;
@@ -147,7 +147,7 @@ async function loadPage() {
   if (state.category) params.set("category", state.category);
 
   try {
-    const r = await fetch("/api/products?" + params.toString());
+    const r = await fetch(apiUrl("/api/products?" + params.toString()));
     const parsed = await readApiJson(r);
     if (parsed.bodyError) {
       if (status) status.textContent = parsed.bodyError;

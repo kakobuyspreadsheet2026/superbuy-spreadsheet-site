@@ -1,6 +1,8 @@
 /**
  * Proxies GET /public/v1/outfits (query params forwarded).
  */
+const applyCors = require("./cors");
+
 function mergeQuery(req) {
   const q = { ...(req.query || {}) };
   const urlStr = req.url || "";
@@ -16,6 +18,7 @@ function mergeQuery(req) {
 }
 
 module.exports = async function handler(req, res) {
+  if (applyCors(req, res)) return;
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
     return;

@@ -2,12 +2,14 @@
  * Proxies GET /public/v1/categories (key from MATRIX_API_KEY on Vercel).
  */
 const { normalizeCategories } = require("./ml-parse");
+const applyCors = require("./cors");
 
 function apiKey() {
   return process.env.MATRIX_API_KEY || process.env.MAISONLOOKS_API_KEY || "";
 }
 
 module.exports = async function handler(req, res) {
+  if (applyCors(req, res)) return;
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
     return;

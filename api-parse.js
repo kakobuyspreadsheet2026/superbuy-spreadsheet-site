@@ -1,7 +1,18 @@
 /**
  * Parse same-origin /api/* responses. Static servers and file:// return HTML → JSON.parse throws.
  * Load this script before index.js / products.js / outfits.js.
+ *
+ * Set window.__API_ORIGIN__ (see HTML) to call a deployed Vercel API from Live Server / static preview.
  */
+function apiUrl(path) {
+  if (typeof window === "undefined") return path;
+  var custom = window.__API_ORIGIN__;
+  if (!custom) return path;
+  var base = String(custom).replace(/\/$/, "");
+  if (base === window.location.origin) return path;
+  return base + path;
+}
+
 async function readApiJson(response) {
   const text = await response.text();
   const start = text.trimStart();
@@ -14,7 +25,7 @@ async function readApiJson(response) {
       status: response.status,
       json: null,
       bodyError:
-        "This page needs the API server. In the project folder run: npx vercel dev — then open the URL it prints (not file:// or python -m http.server). Or use your live Vercel URL with MATRIX_API_KEY set.",
+        "This page needs JSON from /api. Either: (1) run npx vercel dev and open its URL, or (2) keep window.__API_ORIGIN__ in the HTML pointed at your Vercel deployment (MATRIX_API_KEY must be set there).",
     };
   }
   let json;

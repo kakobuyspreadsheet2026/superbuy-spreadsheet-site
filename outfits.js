@@ -63,7 +63,7 @@ async function loadPage() {
   if (state.featuredOnly) params.set("featured", "true");
 
   try {
-    const r = await fetch("/api/outfits?" + params.toString());
+    const r = await fetch(apiUrl("/api/outfits?" + params.toString()));
     const parsed = await readApiJson(r);
     if (parsed.bodyError) {
       if (status) status.textContent = parsed.bodyError;

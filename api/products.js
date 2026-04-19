@@ -9,6 +9,7 @@ const {
   normalizeProductList,
   categorySlug,
 } = require("./ml-parse");
+const applyCors = require("./cors");
 
 const UPSTREAM = "https://api.maisonlooks.com/public/v1";
 
@@ -127,6 +128,7 @@ async function aggregateProductsAcrossCategories(key, limit, offset) {
 }
 
 module.exports = async function handler(req, res) {
+  if (applyCors(req, res)) return;
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
     return;
