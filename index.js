@@ -39,10 +39,7 @@ async function initTopbarCategories() {
     for (const c of sorted) {
       const a = document.createElement("a");
       a.className = "topbar-cats__link";
-      a.href =
-        "index.html?" +
-        new URLSearchParams({ category: c.slug }).toString() +
-        "#catalog";
+      a.href = "products.html?category=" + encodeURIComponent(c.slug);
       a.textContent = c.name || c.slug;
       nav.appendChild(a);
     }

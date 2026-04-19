@@ -438,12 +438,6 @@ body {
   margin-top: 0.5rem;
 }
 
-.main__hint--below-grid {
-  margin-top: 2rem;
-  margin-bottom: 0;
-  text-align: center;
-}
-
 .topbar-cats__loading,
 .topbar-cats__fallback {
   padding: 0.35rem 0.5rem;

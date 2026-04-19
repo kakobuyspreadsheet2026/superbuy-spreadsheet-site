@@ -2,14 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Redirecting…</title>
-    <meta http-equiv="refresh" content="0;url=index.html#catalog" />
-    <script>
-      location.replace("index.html" + location.search + "#catalog");
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>All products · The best spreadsheet 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <p><a href="index.html#catalog">Continue to the catalog on the home page</a></p>
+  <body class="page-products">
+    <header class="site-header">
+      <div class="topbar">
+        <a class="topbar__logo" href="index.html">The best spreadsheet 2026</a>
+        <nav class="topbar__nav topbar__nav--compact" aria-label="Primary">
+          <a class="topbar__link" href="index.html">Home</a>
+          <a class="topbar__link" href="products.html" aria-current="page">Products</a>
+          <a class="topbar__link" href="outfits.html">Outfits</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="products-main" id="catalog">
+      <div class="products-toolbar">
+        <h1 class="products-main__title">All products</h1>
+        <div class="products-toolbar__row">
+          <label class="products-filter">
+            <span class="products-filter__label">Category</span>
+            <select id="filter-cat" class="products-filter__select" aria-label="Filter by category">
+              <option value="">All categories</option>
+            </select>
+          </label>
+        </div>
+        <p class="products-toolbar__note">
+          <strong>All categories</strong> interleaves products across every category (round-robin), similar to MaisonLooks “全部商品”—not one full category at a time.
+          <strong>48 per page</strong>; use <strong>Load more</strong> for the next batch, or pick one category to browse that category only.
+        </p>
+      </div>
+
+      <p id="products-status" class="products-status" role="status"></p>
+
+      <div id="product-grid" class="product-grid"></div>
+
+      <div class="products-actions">
+        <button type="button" id="load-more" class="products-load-more">Load more</button>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        if (window.__API_ORIGIN__) return;
+        var h = location.hostname;
+        if (h === "localhost" || h === "127.0.0.1" || location.protocol === "file:")
+          window.__API_ORIGIN__ = "https://superbuy-spreadsheet-site.vercel.app";
+      })();
+    </script>
+    <script src="api-parse.js"></script>
+    <script src="products.js" defer></script>
   </body>
 </html>
