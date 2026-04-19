@@ -1,8 +1,8 @@
 /**
  * Proxies GET /public/v1/products?category=&limit=&offset=
  *
- * When `category` is omitted, aggregates like scripts/fetch-products.mjs:
- * GET /categories, then GET /products?category=… per slug (max 100 per request per MD).
+ * When `category` is omitted: round-robin across category slugs (cat0[0], cat1[0], … catN-1[0], cat0[1], …)
+ * so early pages look like MaisonLooks “全部商品” (mixed), not “all of category A then B”.
  */
 const {
   normalizeCategories,
@@ -57,7 +57,12 @@ async function fetchUpstreamJson(url, key) {
   return { ok: true, status: r.status, json };
 }
 
-async function aggregateProductsAcrossCategories(key, limit, offset) {
+const PAGE = 100;
+
+/**
+ * Global merged index g → round-robin: category slugs[g % n], item floor(g/n) within that category.
+ */
+async function aggregateRoundRobinAllCategories(key, limit, offset) {
   const catRes = await fetchUpstreamJson(`${UPSTREAM}/categories`, key);
   if (!catRes.ok) return { status: catRes.status, json: catRes.json };
 
@@ -70,59 +75,78 @@ async function aggregateProductsAcrossCategories(key, limit, offset) {
     };
   }
 
-  let skip = offset;
-  const out = [];
-  const PAGE = 100;
-  /** Until we get at least one HTTP 200 from /products, surface upstream errors (e.g. 401). */
-  let sawSuccessfulProductResponse = false;
+  const n = slugs.length;
+  const cache = new Map();
 
-  for (const slug of slugs) {
-    let catOff = 0;
-    while (true) {
-      const sp = new URLSearchParams({
-        category: slug,
-        limit: String(PAGE),
-        offset: String(catOff),
-      });
-      const p = await fetchUpstreamJson(`${UPSTREAM}/products?${sp}`, key);
-      if (!p.ok) {
-        if (!sawSuccessfulProductResponse) {
-          return { status: p.status, json: p.json };
-        }
-        break;
-      }
-      sawSuccessfulProductResponse = true;
-
-      const page = normalizeProductList(p.json);
-      if (!page.length) break;
-
-      for (const item of page) {
-        if (skip > 0) {
-          skip--;
-        } else {
-          out.push(item);
-          if (out.length >= limit) {
-            return {
-              status: 200,
-              json: {
-                data: out,
-                meta: { total: null, limit, offset },
-              },
-            };
-          }
-        }
-      }
-
-      if (page.length < PAGE) break;
-      catOff += page.length;
+  async function loadBatch(slug, batchBase) {
+    const keyStr = `${slug}:${batchBase}`;
+    if (cache.has(keyStr)) return cache.get(keyStr);
+    const sp = new URLSearchParams({
+      category: slug,
+      limit: String(PAGE),
+      offset: String(batchBase),
+    });
+    const p = await fetchUpstreamJson(`${UPSTREAM}/products?${sp}`, key);
+    if (!p.ok) {
+      cache.set(keyStr, { err: p });
+      return cache.get(keyStr);
     }
+    const list = normalizeProductList(p.json);
+    cache.set(keyStr, { list });
+    return cache.get(keyStr);
+  }
+
+  const batchKeys = new Set();
+  for (let i = 0; i < limit; i++) {
+    const g = offset + i;
+    const catIdx = g % n;
+    const idxInCat = Math.floor(g / n);
+    const slug = slugs[catIdx];
+    const batchBase = Math.floor(idxInCat / PAGE) * PAGE;
+    batchKeys.add(`${slug}:${batchBase}`);
+  }
+
+  let firstFailure = null;
+  await Promise.all(
+    [...batchKeys].map(async (keyStr) => {
+      const last = keyStr.lastIndexOf(":");
+      const slug = keyStr.slice(0, last);
+      const base = parseInt(keyStr.slice(last + 1), 10);
+      const res = await loadBatch(slug, base);
+      if (res.err && !firstFailure) firstFailure = res.err;
+    }),
+  );
+
+  const out = [];
+  for (let i = 0; i < limit; i++) {
+    const g = offset + i;
+    const catIdx = g % n;
+    const idxInCat = Math.floor(g / n);
+    const slug = slugs[catIdx];
+    const batchBase = Math.floor(idxInCat / PAGE) * PAGE;
+    const localIdx = idxInCat - batchBase;
+    const keyStr = `${slug}:${batchBase}`;
+    const entry = cache.get(keyStr);
+    if (!entry || entry.err) {
+      if (i === 0 && entry && entry.err) {
+        return { status: entry.err.status, json: entry.err.json };
+      }
+      if (i === 0 && firstFailure) {
+        return { status: firstFailure.status, json: firstFailure.json };
+      }
+      break;
+    }
+    const list = entry.list || [];
+    const item = list[localIdx];
+    if (!item) break;
+    out.push(item);
   }
 
   return {
     status: 200,
     json: {
       data: out,
-      meta: { total: offset + out.length, limit, offset },
+      meta: { total: null, limit, offset },
     },
   };
 }
@@ -159,6 +183,6 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const agg = await aggregateProductsAcrossCategories(key, limit, offset);
+  const agg = await aggregateRoundRobinAllCategories(key, limit, offset);
   res.status(agg.status).json(agg.json);
 };
