@@ -3,10 +3,13 @@ const ML_PRODUCT = "https://maisonlooks.com/zh/p/";
 const PAGE_LIMIT = 48;
 /** Homepage image grid: fixed cap; “查看更多” links to the full catalog page. */
 const HOME_GRID_MAX_ITEMS = 200;
-/** Chunk size per /api/products request when filling the home grid. */
+/** Homepage does not call /api/products — only /initial-products.json (+ localStorage). */
 const PAGE_LIMIT_HOME = 100;
 /** Homepage: first N cards use eager images + fetchPriority high (~2 rows × 6 cols at lg). */
 const HOME_EAGER_IMAGE_COUNT = 12;
+/** localStorage mirror of seed JSON (repeat visits skip network when fresh). */
+const HOME_SEED_CACHE_KEY = "ml_initial_products_seed_v1";
+const HOME_SEED_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function pageLimit() {
   return document.body?.classList.contains("page-home") ? PAGE_LIMIT_HOME : PAGE_LIMIT;
@@ -19,6 +22,27 @@ const state = {
   loading: false,
   done: false,
 };
+
+function readHomeSeedCache() {
+  try {
+    const raw = localStorage.getItem(HOME_SEED_CACHE_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (!o || typeof o.t !== "number" || o.json == null) return null;
+    if (Date.now() - o.t > HOME_SEED_CACHE_TTL_MS) return null;
+    return o.json;
+  } catch {
+    return null;
+  }
+}
+
+function writeHomeSeedCache(json) {
+  try {
+    localStorage.setItem(HOME_SEED_CACHE_KEY, JSON.stringify({ t: Date.now(), json }));
+  } catch {
+    /* quota / private mode */
+  }
+}
 
 /** Matches fetch-products.mjs + common paginated shapes. */
 function normalizeProductList(json) {
@@ -193,9 +217,15 @@ async function hydrateInitialProducts() {
     }
   }
   if (!json) {
+    json = readHomeSeedCache();
+  }
+  if (!json) {
     try {
       const r = await fetch("/initial-products.json", { cache: "force-cache" });
-      if (r.ok) json = await r.json();
+      if (r.ok) {
+        json = await r.json();
+        writeHomeSeedCache(json);
+      }
     } catch {
       json = null;
     }
@@ -211,7 +241,8 @@ async function hydrateInitialProducts() {
   const meta = json.meta || {};
   if (typeof meta.total === "number") state.total = meta.total;
 
-  const cap = document.body?.classList.contains("page-home") ? HOME_GRID_MAX_ITEMS : items.length;
+  const isHome = document.body?.classList.contains("page-home");
+  const cap = isHome ? Math.min(HOME_GRID_MAX_ITEMS, items.length) : items.length;
   const slice = items.slice(0, cap);
   slice.forEach((p, i) => {
     grid.appendChild(cardEl(p, { homeIndex: i }));
@@ -219,8 +250,8 @@ async function hydrateInitialProducts() {
   state.offset = slice.length;
 
   const limit = pageLimit();
-  if (document.body?.classList.contains("page-home")) {
-    state.done = grid.children.length >= HOME_GRID_MAX_ITEMS;
+  if (isHome) {
+    state.done = true;
   } else if (items.length < limit || (state.total != null && state.offset >= state.total)) {
     state.done = true;
   } else {
@@ -228,19 +259,11 @@ async function hydrateInitialProducts() {
   }
 }
 
-function homeGridSlotsRemaining() {
-  const grid = document.getElementById("product-grid");
-  if (!grid || !document.body?.classList.contains("page-home")) return Infinity;
-  return Math.max(0, HOME_GRID_MAX_ITEMS - grid.children.length);
-}
-
 async function loadPage() {
   if (state.loading || state.done) return;
-  const homeRemain = homeGridSlotsRemaining();
-  if (document.body?.classList.contains("page-home") && homeRemain === 0) {
-    state.done = true;
-    return;
-  }
+  /** Home grid is 100% seed JSON only; /api/products runs on /products (View more). */
+  if (document.body?.classList.contains("page-home")) return;
+
   state.loading = true;
   const btn = document.getElementById("load-more");
   const status = document.getElementById("products-status");
@@ -249,9 +272,6 @@ async function loadPage() {
   if (status) status.textContent = "Loading…";
 
   let limit = pageLimit();
-  if (document.body?.classList.contains("page-home")) {
-    limit = Math.max(1, Math.min(limit, homeRemain));
-  }
   const params = new URLSearchParams({
     limit: String(limit),
     offset: String(state.offset),
@@ -304,30 +324,13 @@ async function loadPage() {
 
     let appended = 0;
     for (const p of items) {
-      if (document.body?.classList.contains("page-home") && grid.children.length >= HOME_GRID_MAX_ITEMS) {
-        break;
-      }
-      const homeIdx = document.body?.classList.contains("page-home") ? grid.children.length : undefined;
-      grid.appendChild(cardEl(p, homeIdx !== undefined ? { homeIndex: homeIdx } : {}));
+      grid.appendChild(cardEl(p));
       appended++;
     }
 
-    if (document.body?.classList.contains("page-home")) {
-      while (grid.children.length > HOME_GRID_MAX_ITEMS) {
-        grid.removeChild(grid.lastElementChild);
-      }
-      state.offset = grid.children.length;
-    } else {
-      state.offset += appended;
-    }
+    state.offset += appended;
 
-    if (document.body?.classList.contains("page-home")) {
-      state.done =
-        grid.children.length >= HOME_GRID_MAX_ITEMS ||
-        appended < items.length ||
-        items.length < limit ||
-        (state.total != null && state.offset >= state.total);
-    } else if (items.length < limit || (state.total != null && state.offset >= state.total)) {
+    if (items.length < limit || (state.total != null && state.offset >= state.total)) {
       state.done = true;
       if (btn) btn.hidden = true;
     } else if (btn) {
@@ -404,17 +407,12 @@ async function init() {
   }
   await hydrateInitialProducts();
   if (isHome) {
-    let guard = 0;
-    const maxBatches = 20;
-    while (!state.done && guard++ < maxBatches) {
-      await loadPage();
-    }
     const grid = document.getElementById("product-grid");
     const emptyEl = document.getElementById("home-grid-empty");
     if (grid && emptyEl && grid.children.length === 0) {
       emptyEl.hidden = false;
       emptyEl.textContent =
-        "Could not load products (check network, or Vercel MATRIX_API_KEY for /api/products). Try refreshing or open the full catalog.";
+        "Homepage products load from /initial-products.json only (no API here). Run npm run seed-products with SEED_API_URL or commit public/initial-products.json, then redeploy. Or open the full catalog.";
     }
   } else {
     await loadPage();

@@ -162,7 +162,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
-    <!-- Static seed for homepage grid (see scripts/generate-initial-products.mjs); speeds first paint vs /api -->
+    <!-- Homepage grid: one fetch for /initial-products.json (+ optional localStorage); no /api on home -->
     <link rel="preload" href="/initial-products.json" as="fetch" crossorigin />
   </head>
   <body class="page-home">
@@ -306,7 +306,7 @@
         <div class="home-catalog-cta">
           <a href="/products" class="products-load-more home-view-more">View more</a>
           <p class="home-grid-footer">
-            The homepage shows up to 200 items. Open the full catalog for filters, categories, and infinite scroll.
+            Up to 200 items from the built-in product list (same as downloading a snapshot—no catalog API on this page). Open the full catalog for live API loading, filters, and categories.
           </p>
         </div>
       </section>
