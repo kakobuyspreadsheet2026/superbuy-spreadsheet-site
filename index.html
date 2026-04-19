@@ -129,7 +129,12 @@
 
     <button type="button" class="info-btn" title="Info" aria-label="Information">i</button>
     <script>
-      window.__API_ORIGIN__ = "https://superbuy-spreadsheet-site.vercel.app";
+      (function () {
+        if (window.__API_ORIGIN__) return;
+        var h = location.hostname;
+        if (h === "localhost" || h === "127.0.0.1" || location.protocol === "file:")
+          window.__API_ORIGIN__ = "https://superbuy-spreadsheet-site.vercel.app";
+      })();
     </script>
     <script src="api-parse.js"></script>
     <script src="index.js" defer></script>

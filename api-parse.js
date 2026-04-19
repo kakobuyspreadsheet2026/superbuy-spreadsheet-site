@@ -2,7 +2,7 @@
  * Parse same-origin /api/* responses. Static servers and file:// return HTML → JSON.parse throws.
  * Load this script before index.js / products.js / outfits.js.
  *
- * Set window.__API_ORIGIN__ (see HTML) to call a deployed Vercel API from Live Server / static preview.
+ * On production domains, requests stay same-origin (/api). __API_ORIGIN__ is only set for localhost / file (see HTML).
  */
 function apiUrl(path) {
   if (typeof window === "undefined") return path;
