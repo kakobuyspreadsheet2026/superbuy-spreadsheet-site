@@ -1,6 +1,6 @@
 /**
  * Parse same-origin /api/* responses. Static servers and file:// return HTML → JSON.parse throws.
- * Load this script before index.js / products.js / outfits.js.
+ * Load this script before products.js / outfits.js (and any page using fetchApiJson).
  *
  * On production domains, requests stay same-origin (/api). __API_ORIGIN__ is only set for localhost / file (see HTML).
  */

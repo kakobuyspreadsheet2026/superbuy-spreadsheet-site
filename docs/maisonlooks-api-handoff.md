@@ -12,9 +12,9 @@ updated_at: 2026-04-19
 
 1. Vercel → **Environment Variables**: `MATRIX_API_KEY` (Production + Preview).
 2. Routes: `/api/categories`, `/api/products`, `/api/outfits` are serverless proxies; the browser never sees the key.
-3. Pages: `index.html` (hero + category bar: **Shoes** (EN shoe-related slugs/names) first, **Clothing** second, **More categories** for the rest; image-only grid; scroll loads more, `limit=200`; `?category=` from top bar), `products.html` (full catalog UI, `limit=48` + Load more + `?category=`), `outfits.html` (outfits grid).
+3. Pages: `index.html` (hero + **static** category links in HTML, `?category=` slugs; image-only grid; scroll loads more, `limit=200`), `products.html` (full catalog UI + API-filled category dropdown, `limit=48` + Load more + `?category=`), `outfits.html` (outfits grid).
 
-**Caching:** Successful JSON responses set `Cache-Control` (`s-maxage` for CDN, `max-age` for browser). Serverless handlers also keep a short in-memory TTL cache (warm instance). The static `api-parse.js` uses `fetchApiJson()` with a per-URL memory cache in the tab to avoid duplicate fetches (e.g. categories requested from both `index.js` and `products.js`).
+**Caching:** Successful JSON responses set `Cache-Control` (`s-maxage` for CDN, `max-age` for browser). Serverless handlers also keep a short in-memory TTL cache (warm instance). The static `api-parse.js` uses `fetchApiJson()` with a per-URL memory cache in the tab to avoid duplicate fetches (e.g. `products.js`).
 
 **Do not commit API keys.** GitHub 里只保留占位说明；真实密钥只放在下面两处之一，**永远不要**写进 `docs/` 或任何会 push 的文件。
 

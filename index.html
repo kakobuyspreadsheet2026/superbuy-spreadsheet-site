@@ -94,8 +94,23 @@
         </nav>
       </div>
 
+      <!-- Slugs must match GET /public/v1/categories — edit names/slugs here if your API differs. -->
       <nav class="topbar-cats" id="topbar-cats" aria-label="Product categories">
-        <span class="topbar-cats__loading">Loading categories…</span>
+        <a class="topbar-cats__link" href="index.html">All products</a>
+        <a class="topbar-cats__link" href="?category=sneakers">Sneakers</a>
+        <a class="topbar-cats__link" href="?category=boots">Boots</a>
+        <a class="topbar-cats__link" href="?category=sandals-slippers">Sandals &amp; Slippers</a>
+        <a class="topbar-cats__link" href="?category=loafers-flats">Loafers &amp; Flats</a>
+        <a class="topbar-cats__link" href="?category=heels">Heels</a>
+        <a class="topbar-cats__link" href="?category=sets-suits">Sets &amp; Suits</a>
+        <a class="topbar-cats__link" href="?category=dresses-one-piece">Dresses &amp; One-piece</a>
+        <a class="topbar-cats__link" href="?category=outerwear">Outerwear</a>
+        <a class="topbar-cats__link" href="?category=tops">Tops</a>
+        <a class="topbar-cats__link" href="?category=bottoms">Bottoms</a>
+        <a class="topbar-cats__link" href="?category=bags-backpacks">Bags &amp; Backpacks</a>
+        <a class="topbar-cats__link" href="?category=accessories">Accessories</a>
+        <a class="topbar-cats__link" href="?category=beauty-fragrance">Beauty &amp; Fragrance</a>
+        <a class="topbar-cats__link" href="?category=electronics">Electronics</a>
       </nav>
     </header>
 
@@ -136,7 +151,6 @@
       })();
     </script>
     <script src="api-parse.js"></script>
-    <script src="index.js" defer></script>
     <script src="products.js" defer></script>
   </body>
 </html>
