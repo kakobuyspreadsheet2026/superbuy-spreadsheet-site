@@ -31,9 +31,7 @@ async function initTopbarCategories() {
           : [];
     nav.innerHTML = "";
 
-    const sorted = [...list].sort((a, b) =>
-      String(a.name || a.slug).localeCompare(String(b.name || b.slug)),
-    );
+    const sorted = sortCategoriesApparelFirst(list);
 
     for (const c of sorted) {
       const a = document.createElement("a");
