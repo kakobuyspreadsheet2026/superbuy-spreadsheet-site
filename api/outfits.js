@@ -2,6 +2,10 @@
  * Proxies GET /public/v1/outfits (query params forwarded).
  */
 const applyCors = require("./cors");
+const mem = require("./memory-cache");
+const { setPublicCache, setNoStore } = require("./cache-control");
+
+const MEM_TTL_MS = 2 * 60 * 1000;
 
 function mergeQuery(req) {
   const q = { ...(req.query || {}) };
@@ -26,6 +30,7 @@ module.exports = async function handler(req, res) {
 
   const key = process.env.MATRIX_API_KEY || process.env.MAISONLOOKS_API_KEY || "";
   if (!key) {
+    setNoStore(res);
     res.status(503).json({ error: "MATRIX_API_KEY is not configured on the server" });
     return;
   }
@@ -41,6 +46,14 @@ module.exports = async function handler(req, res) {
   if (!sp.has("offset")) sp.set("offset", "0");
 
   const url = `https://api.maisonlooks.com/public/v1/outfits?${sp.toString()}`;
+  const memKey = `o:${sp.toString()}`;
+
+  const hit = mem.get(memKey);
+  if (hit) {
+    setPublicCache(res, "outfits");
+    res.status(200).json(hit);
+    return;
+  }
 
   try {
     const r = await fetch(url, {
@@ -52,6 +65,10 @@ module.exports = async function handler(req, res) {
       body = JSON.parse(text);
     } catch {
       body = { error: "Invalid JSON from upstream", raw: text.slice(0, 200) };
+    }
+    if (r.ok) {
+      mem.set(memKey, body, MEM_TTL_MS);
+      setPublicCache(res, "outfits");
     }
     res.status(r.status).json(body);
   } catch (e) {

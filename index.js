@@ -6,8 +6,7 @@ async function initTopbarCategories() {
   if (!nav) return;
 
   try {
-    const r = await fetch(apiUrl("/api/categories"));
-    const parsed = await readApiJson(r);
+    const parsed = await fetchApiJson("/api/categories");
     if (parsed.bodyError) {
       nav.innerHTML = "";
       const span = document.createElement("span");

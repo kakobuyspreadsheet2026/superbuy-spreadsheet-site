@@ -3,6 +3,11 @@
  */
 const { normalizeCategories } = require("./ml-parse");
 const applyCors = require("./cors");
+const mem = require("./memory-cache");
+const { setPublicCache, setNoStore } = require("./cache-control");
+
+const MEM_KEY = "categories:v2";
+const MEM_TTL_MS = 5 * 60 * 1000;
 
 function apiKey() {
   return process.env.MATRIX_API_KEY || process.env.MAISONLOOKS_API_KEY || "";
@@ -17,7 +22,15 @@ module.exports = async function handler(req, res) {
 
   const key = apiKey();
   if (!key) {
+    setNoStore(res);
     res.status(503).json({ error: "MATRIX_API_KEY is not configured on the server" });
+    return;
+  }
+
+  const cached = mem.get(MEM_KEY);
+  if (cached) {
+    setPublicCache(res, "categories");
+    res.status(200).json(cached);
     return;
   }
 
@@ -38,7 +51,10 @@ module.exports = async function handler(req, res) {
       return;
     }
     const list = normalizeCategories(body);
-    res.status(200).json({ data: list });
+    const payload = { data: list };
+    mem.set(MEM_KEY, payload, MEM_TTL_MS);
+    setPublicCache(res, "categories");
+    res.status(200).json(payload);
   } catch (e) {
     res.status(502).json({ error: String(e.message || e) });
   }

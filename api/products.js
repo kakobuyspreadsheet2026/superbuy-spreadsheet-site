@@ -10,6 +10,14 @@ const {
   categorySlug,
 } = require("./ml-parse");
 const applyCors = require("./cors");
+const mem = require("./memory-cache");
+const { setPublicCache, setNoStore } = require("./cache-control");
+
+const MEM_TTL_MS = 2 * 60 * 1000;
+
+function productsMemKey(limit, offset, categorySlug) {
+  return `p:${categorySlug ? `c:${categorySlug}` : "rr"}:${limit}:${offset}`;
+}
 
 const UPSTREAM = "https://api.maisonlooks.com/public/v1";
 
@@ -154,6 +162,7 @@ module.exports = async function handler(req, res) {
 
   const key = process.env.MATRIX_API_KEY || process.env.MAISONLOOKS_API_KEY || "";
   if (!key) {
+    setNoStore(res);
     res.status(503).json({ error: "MATRIX_API_KEY is not configured on the server" });
     return;
   }
@@ -161,6 +170,14 @@ module.exports = async function handler(req, res) {
   const q = mergeQuery(req);
   const limit = clampLimit(q.limit);
   const offset = clampOffset(q.offset);
+  const memKey = productsMemKey(limit, offset, q.category ? String(q.category) : "");
+
+  const hit = mem.get(memKey);
+  if (hit) {
+    setPublicCache(res, "products");
+    res.status(200).json(hit);
+    return;
+  }
 
   if (q.category) {
     const sp = new URLSearchParams({
@@ -173,10 +190,18 @@ module.exports = async function handler(req, res) {
       res.status(result.status).json(result.json);
       return;
     }
+    mem.set(memKey, result.json, MEM_TTL_MS);
+    setPublicCache(res, "products");
     res.status(200).json(result.json);
     return;
   }
 
   const agg = await aggregateRoundRobinAllCategories(key, limit, offset);
-  res.status(agg.status).json(agg.json);
+  if (agg.status !== 200) {
+    res.status(agg.status).json(agg.json);
+    return;
+  }
+  mem.set(memKey, agg.json, MEM_TTL_MS);
+  setPublicCache(res, "products");
+  res.status(200).json(agg.json);
 };
