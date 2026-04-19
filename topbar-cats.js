@@ -1,25 +1,34 @@
 /**
  * Fills the teal category bar: show as many links as fit on one row, then fold the rest under "More".
- * Edit LINKS below — slugs must match GET /public/v1/categories.
+ * Links open MaisonLooks (same slugs as GET /public/v1/categories — main site path /zh/c/{slug}).
  */
 (function () {
+  /** Chinese site base; category pages are /zh/c/{slug} per API handoff */
+  const ML_ZH = "https://maisonlooks.com/zh";
+
+  /** `slug` → `${ML_ZH}/c/{slug}`. Use `href` only for "All products" or one-off URLs. */
   const LINKS = [
-    { href: "index.html", label: "All products" },
-    { href: "?category=sneakers", label: "Sneakers" },
-    { href: "?category=boots", label: "Boots" },
-    { href: "?category=sandals-slippers", label: "Sandals & Slippers" },
-    { href: "?category=loafers-flats", label: "Loafers & Flats" },
-    { href: "?category=heels", label: "Heels" },
-    { href: "?category=sets-suits", label: "Sets & Suits" },
-    { href: "?category=dresses-one-piece", label: "Dresses & One-piece" },
-    { href: "?category=outerwear", label: "Outerwear" },
-    { href: "?category=tops", label: "Tops" },
-    { href: "?category=bottoms", label: "Bottoms" },
-    { href: "?category=bags-backpacks", label: "Bags & Backpacks" },
-    { href: "?category=accessories", label: "Accessories" },
-    { href: "?category=beauty-fragrance", label: "Beauty & Fragrance" },
-    { href: "?category=electronics", label: "Electronics" },
+    { label: "All products", href: `${ML_ZH}/` },
+    { label: "Sneakers", slug: "sneakers" },
+    { label: "Boots", slug: "boots" },
+    { label: "Sandals & Slippers", slug: "sandals-slippers" },
+    { label: "Loafers & Flats", slug: "loafers-flats" },
+    { label: "Heels", slug: "heels" },
+    { label: "Sets & Suits", slug: "sets-suits" },
+    { label: "Dresses & One-piece", slug: "dresses-one-piece" },
+    { label: "Outerwear", slug: "outerwear" },
+    { label: "Tops", slug: "tops" },
+    { label: "Bottoms", slug: "bottoms" },
+    { label: "Bags & Backpacks", slug: "bags-backpacks" },
+    { label: "Accessories", slug: "accessories" },
+    { label: "Beauty & Fragrance", slug: "beauty-fragrance" },
+    { label: "Electronics", slug: "electronics" },
   ];
+
+  function itemHref(item) {
+    if (item.slug) return `${ML_ZH}/c/${encodeURIComponent(item.slug)}`;
+    return item.href || `${ML_ZH}/`;
+  }
 
   let debounceTimer;
   let measureHost;
@@ -33,8 +42,10 @@
   function buildLink(item) {
     const a = document.createElement("a");
     a.className = "topbar-cats__link";
-    a.href = item.href;
+    a.href = itemHref(item);
     a.textContent = item.label;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
     return a;
   }
 
