@@ -67,26 +67,43 @@ function pruneApiFetchCache() {
 }
 
 /**
- * Lower = earlier in nav. Shoes & apparel first, then bags/accessories, then rest.
- * Heuristic on slug + display name (EN + ZH patterns).
+ * True if category is shoe/footwear-related (English catalog names like Sneakers, Boots, Footwear,
+ * plus ZH). Must run before clothing so “Women’s Shoes” is never classified as clothing.
+ */
+function isShoeRelatedCategoryStrings(s, raw) {
+  if (/鞋|靴|拖|帆布鞋|运动鞋|凉鞋|皮鞋|球鞋|拖鞋|乐福|高跟|平底/.test(raw)) return true;
+  if (
+    /\b(shoes?|sneakers?|footwear|boots?|sandals?|slippers?|trainers?|loafers?|flats?|heels?|mules?|clogs?|slides?|pumps?|oxfords?|derbys?|brogues?|espadrilles?|cleats?|flip[-\s]?flops?|high[\s-]?heels?|basketball[\s-]?shoes?|skate[\s-]?shoes?)\b/i.test(
+      s,
+    )
+  )
+    return true;
+  if (
+    /(^|[-_/])(sneaker|footwear|sandal|slipper|boot|loafer|oxford|derby|clog|mule|espadrille|chelsea|chukka|wedge|pump|flipflop)([-_/]|$)/i.test(
+      s,
+    )
+  )
+    return true;
+  if (/\b(men|women|kid)s['\u2019]?\s+shoe/.test(s)) return true;
+  if (/\b(loafer|sandal|slipper|mule|clog|oxford|derby|espadrille)s?\b/.test(s)) return true;
+  return false;
+}
+
+/**
+ * Lower = earlier in nav. Rank 0 = shoe-related, 1 = clothing, 2 = bags/accessories, 50 = rest.
  */
 function categoryApparelRank(c) {
   var raw = String(c.slug || "") + " " + String(c.name || "");
   var s = raw.toLowerCase();
-  // Chinese labels (API may return ZH names)
-  if (/鞋|靴|拖|帆布鞋|运动鞋|凉鞋|皮鞋|球鞋|拖鞋|乐福|高跟|平底/.test(raw)) return 0;
+
+  if (isShoeRelatedCategoryStrings(s, raw)) return 0;
+
   if (
     /服|装|衣|裤|裙|衫|袄|袜|帽|内衣|外套|卫衣|夹克|大衣|棉衣|羽绒|童装|男装|女装|服饰|衣着|针织|西装|礼服|泳装|运动服/.test(raw)
   )
     return 1;
   if (
-    /shoe|sneaker|footwear|boot|sandal|slipper|trainer|clog|loafer|heel|mule|slide|pump|oxford|derby/.test(
-      s,
-    )
-  )
-    return 0;
-  if (
-    /cloth|apparel|mens|womens|kid|wear|hoodie|jacket|coat|sweater|shirt|pant|denim|dress|skirt|underwear|active|athletic|street|top|bottom|outerwear|knit|suit|uniform|lingerie|swim|tee|polo|cargo|short|legging|sock|intimate|outer|fleece|cardigan|blazer|vest|tank|blouse|knitwear|jersey|tracksuit|sportswear/.test(
+    /cloth|apparel|hoodie|jacket|coat|sweater|shirt|pant|denim|dress|skirt|underwear|active|athletic|street|outerwear|knit|suit|uniform|lingerie|swim|tee|polo|cargo|short|legging|sock|fleece|cardigan|blazer|vest|tank|blouse|knitwear|jersey|tracksuit|sportswear|one[-\s]?piece|bodysuit|romper|overall|bib|tops?|bottoms?|sets?\s*&|suits?|intimate|intimates|swimwear|loungewear|sleepwear|mens|womens|kids?|boy|girl/.test(
       s,
     )
   )

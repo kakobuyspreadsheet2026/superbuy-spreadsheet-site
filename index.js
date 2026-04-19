@@ -80,8 +80,8 @@ async function initTopbarCategories() {
         }
       }
 
-      appendGroup("鞋类", shoes);
-      appendGroup("服装", clothes);
+      appendGroup("Shoes", shoes);
+      appendGroup("Clothing", clothes);
     }
 
     if (more.length > 0) {
@@ -90,7 +90,7 @@ async function initTopbarCategories() {
 
       const summary = document.createElement("summary");
       summary.className = "topbar-cats__link topbar-cats__more-summary";
-      summary.textContent = "更多分类";
+      summary.textContent = "More categories";
 
       const dropdown = document.createElement("div");
       dropdown.className = "topbar-cats__more-dropdown";
