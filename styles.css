@@ -579,6 +579,20 @@ body {
   box-sizing: border-box;
 }
 
+/*
+ * Home: Categories control lives in the hero on small screens; the dropdown is
+ * position:absolute and extends over <main>. Without this, .hero (z-index:0)
+ * stacks below the following .main and product images paint on top of the panel.
+ */
+.page-home .hero {
+  z-index: 2;
+}
+
+.page-home .main {
+  position: relative;
+  z-index: 1;
+}
+
 .hero__brand {
   margin: 0 0 1.25rem;
   font-size: 0.85rem;
