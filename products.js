@@ -44,6 +44,17 @@ function writeHomeSeedCache(json) {
   }
 }
 
+/** Long npm/seed copy is for local debugging only; production gets a short visitor message. */
+function showHomeDevHints() {
+  try {
+    const h = window.location.hostname;
+    if (h === "localhost" || h === "127.0.0.1") return true;
+    return new URLSearchParams(window.location.search).get("dev") === "1";
+  } catch {
+    return false;
+  }
+}
+
 /** Matches fetch-products.mjs + common paginated shapes. */
 function normalizeProductList(json) {
   if (Array.isArray(json)) return json;
@@ -411,8 +422,13 @@ async function init() {
     const emptyEl = document.getElementById("home-grid-empty");
     if (grid && emptyEl && grid.children.length === 0) {
       emptyEl.hidden = false;
-      emptyEl.textContent =
-        "Homepage products load from /initial-products.json only (no API here). Run npm run seed-products with SEED_API_URL or commit public/initial-products.json, then redeploy. Or open the full catalog.";
+      if (showHomeDevHints()) {
+        emptyEl.textContent =
+          "Homepage products load from /initial-products.json only (no API here). Run npm run seed-products with SEED_API_URL or commit public/initial-products.json, then redeploy. Or open the full catalog.";
+      } else {
+        emptyEl.innerHTML =
+          'Preview couldn’t load. <a href="/products">Open the full catalog</a> for the live list.';
+      }
     }
   } else {
     await loadPage();
