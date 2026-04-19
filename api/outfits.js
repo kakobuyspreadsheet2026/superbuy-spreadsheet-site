@@ -1,6 +1,20 @@
 /**
  * Proxies GET /public/v1/outfits (query params forwarded).
  */
+function mergeQuery(req) {
+  const q = { ...(req.query || {}) };
+  const urlStr = req.url || "";
+  try {
+    const u = new URL(urlStr, "http://localhost");
+    u.searchParams.forEach((v, k) => {
+      if (q[k] == null || q[k] === "") q[k] = v;
+    });
+  } catch (_) {
+    /* ignore */
+  }
+  return q;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
@@ -13,7 +27,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const q = req.query || {};
+  const q = mergeQuery(req);
   const sp = new URLSearchParams();
   for (const [k, v] of Object.entries(q)) {
     if (v === undefined || v === "") continue;
