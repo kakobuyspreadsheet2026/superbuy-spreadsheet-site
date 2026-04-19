@@ -60,7 +60,9 @@ async function fetchUpstreamJson(url, key) {
 const PAGE = 100;
 
 /**
- * Global merged index g → round-robin: category slugs[g % n], item floor(g/n) within that category.
+ * Round-robin index g → category slugs[g % n], nth product floor(g/n).
+ * Empty slots (no product at that g) are skipped; `offset` skips the first N *successful* items
+ * so the page fills up to `limit` and pagination matches client state.offset.
  */
 async function aggregateRoundRobinAllCategories(key, limit, offset) {
   const catRes = await fetchUpstreamJson(`${UPSTREAM}/categories`, key);
@@ -96,50 +98,42 @@ async function aggregateRoundRobinAllCategories(key, limit, offset) {
     return cache.get(keyStr);
   }
 
-  const batchKeys = new Set();
-  for (let i = 0; i < limit; i++) {
-    const g = offset + i;
-    const catIdx = g % n;
-    const idxInCat = Math.floor(g / n);
-    const slug = slugs[catIdx];
-    const batchBase = Math.floor(idxInCat / PAGE) * PAGE;
-    batchKeys.add(`${slug}:${batchBase}`);
+  const probe = await loadBatch(slugs[0], 0);
+  if (probe.err) {
+    const st = probe.err.status;
+    if (st === 401 || st === 403) {
+      return { status: st, json: probe.err.json };
+    }
   }
 
-  let firstFailure = null;
-  await Promise.all(
-    [...batchKeys].map(async (keyStr) => {
-      const last = keyStr.lastIndexOf(":");
-      const slug = keyStr.slice(0, last);
-      const base = parseInt(keyStr.slice(last + 1), 10);
-      const res = await loadBatch(slug, base);
-      if (res.err && !firstFailure) firstFailure = res.err;
-    }),
-  );
-
-  const out = [];
-  for (let i = 0; i < limit; i++) {
-    const g = offset + i;
+  async function getItemAtG(g) {
     const catIdx = g % n;
     const idxInCat = Math.floor(g / n);
     const slug = slugs[catIdx];
     const batchBase = Math.floor(idxInCat / PAGE) * PAGE;
     const localIdx = idxInCat - batchBase;
     const keyStr = `${slug}:${batchBase}`;
-    const entry = cache.get(keyStr);
-    if (!entry || entry.err) {
-      if (i === 0 && entry && entry.err) {
-        return { status: entry.err.status, json: entry.err.json };
-      }
-      if (i === 0 && firstFailure) {
-        return { status: firstFailure.status, json: firstFailure.json };
-      }
-      break;
+    if (!cache.has(keyStr)) {
+      await loadBatch(slug, batchBase);
     }
+    const entry = cache.get(keyStr);
+    if (!entry || entry.err) return null;
     const list = entry.list || [];
-    const item = list[localIdx];
-    if (!item) break;
-    out.push(item);
+    return list[localIdx] || null;
+  }
+
+  let g = 0;
+  let seen = 0;
+  const out = [];
+  const MAX_G = 800_000;
+
+  while (out.length < limit && g < MAX_G) {
+    const item = await getItemAtG(g);
+    if (item) {
+      if (seen >= offset) out.push(item);
+      seen++;
+    }
+    g++;
   }
 
   return {
