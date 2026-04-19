@@ -4,7 +4,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "node scripts/generate-initial-products.mjs",
+    "build": "node scripts/generate-initial-products.mjs && node scripts/generate-sitemap.mjs",
     "seed-products": "node scripts/generate-initial-products.mjs",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "dev": "node scripts/dev-server.mjs"

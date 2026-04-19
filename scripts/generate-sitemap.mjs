@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Writes sitemap.xml + robots.txt at repo root from vercel.json rewrites.
- * Run: npm run sitemap
+ * Run: npm run sitemap  (also runs automatically after npm run build)
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -27,7 +27,14 @@ const sorted = [...urls].sort((a, b) => {
   return a.localeCompare(b);
 });
 
-const today = new Date().toISOString().slice(0, 10);
+function localDateYmd() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+const today = localDateYmd();
 const body = sorted
   .map(
     (loc) => `  <url>
