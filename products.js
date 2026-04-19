@@ -145,6 +145,68 @@ async function loadCategories() {
   }
 }
 
+/**
+ * Homepage: paint first batch from static seed (no slow /api round-robin) when possible.
+ * Priority: window.__INITIAL_PRODUCTS__ → #initial-products-json → GET /initial-products.json
+ * (Build: scripts/generate-initial-products.mjs + SEED_API_URL → public/initial-products.json)
+ */
+async function hydrateInitialProducts() {
+  if (!document.body?.classList.contains("page-home")) return;
+  if (state.category) return;
+
+  let json = null;
+  if (typeof window.__INITIAL_PRODUCTS__ !== "undefined" && window.__INITIAL_PRODUCTS__ != null) {
+    try {
+      json =
+        typeof window.__INITIAL_PRODUCTS__ === "string"
+          ? JSON.parse(window.__INITIAL_PRODUCTS__)
+          : window.__INITIAL_PRODUCTS__;
+    } catch {
+      json = null;
+    }
+  }
+  if (!json) {
+    const el = document.getElementById("initial-products-json");
+    if (el && el.textContent.trim()) {
+      try {
+        json = JSON.parse(el.textContent);
+      } catch {
+        json = null;
+      }
+    }
+  }
+  if (!json) {
+    try {
+      const r = await fetch("/initial-products.json", { cache: "force-cache" });
+      if (r.ok) json = await r.json();
+    } catch {
+      json = null;
+    }
+  }
+  if (!json) return;
+
+  const items = normalizeProductList(json);
+  if (!items.length) return;
+
+  const grid = document.getElementById("product-grid");
+  if (!grid) return;
+
+  const limit = pageLimit();
+  const meta = json.meta || {};
+  if (typeof meta.total === "number") state.total = meta.total;
+
+  for (const p of items) {
+    grid.appendChild(cardEl(p));
+  }
+  state.offset = items.length;
+
+  if (items.length < limit || (state.total != null && state.offset >= state.total)) {
+    state.done = true;
+  } else {
+    state.done = false;
+  }
+}
+
 /** If the sentinel is still in view after a batch (short viewport), load again without waiting for scroll. */
 function maybePrefetchMoreHome() {
   if (!document.body?.classList.contains("page-home") || state.done || state.loading) return;
@@ -298,6 +360,7 @@ async function init() {
       syncCategoryUrl();
     }
   }
+  await hydrateInitialProducts();
   await loadPage();
 
   if (isHome) {

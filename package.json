@@ -2,5 +2,9 @@
   "private": true,
   "engines": {
     "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/generate-initial-products.mjs",
+    "seed-products": "node scripts/generate-initial-products.mjs"
   }
 }
