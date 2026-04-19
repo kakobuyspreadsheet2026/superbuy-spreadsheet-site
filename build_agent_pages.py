@@ -540,7 +540,7 @@ def page_html(slug: str, name: str) -> str:
         </div>
         <p class="agent-landing__topic-cluster">
           More on this site: <a href="/">spreadsheet home</a>,
-          <a href="/products">all products</a>, and
+          <a href="https://maisonlooks.com/zh/products" target="_blank" rel="noopener noreferrer">MaisonLooks all products</a>, and
           <a href="/outfits">Outfits</a> (coordinated looks)—browse here, then checkout on
           <a href="{official_url}" target="_blank" rel="noopener noreferrer">{host_label}</a>.
         </p>
@@ -692,7 +692,7 @@ def page_html(slug: str, name: str) -> str:
             rel="noopener noreferrer"
             >{cta_logo_html}{name} official ({host_label})</a
           >
-          <a class="topbar__link" href="/products">All products</a>
+          <a class="topbar__link" href="https://maisonlooks.com/zh/products" target="_blank" rel="noopener noreferrer">All products</a>
           <a class="topbar__link" href="https://maisonlooks.com/zh" target="_blank" rel="noopener noreferrer">MaisonLooks</a>
         </div>
 

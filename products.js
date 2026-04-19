@@ -282,7 +282,7 @@ async function hydrateInitialProducts() {
 
 async function loadPage() {
   if (state.loading || state.done) return;
-  /** Home grid is 100% seed JSON only; /api/products is used on /products, not on /. */
+  /** Home grid is 100% seed JSON only; no /api/products on home (that API powers /products.html if opened directly). */
   if (document.body?.classList.contains("page-home")) return;
 
   state.loading = true;
@@ -434,7 +434,7 @@ async function init() {
       emptyEl.hidden = false;
       if (showHomeDevHints()) {
         emptyEl.textContent =
-          "Homepage products load from /initial-products.json only (no API here). Run npm run seed-products with SEED_API_URL or commit public/initial-products.json, then redeploy. Or open the full catalog.";
+          "Homepage products load from /initial-products.json only (no API here). Run npm run seed-products with SEED_API_URL or commit public/initial-products.json, then redeploy. Or browse MaisonLooks: https://maisonlooks.com/zh/products";
       } else {
         emptyEl.innerHTML =
           'Preview couldn’t load. <a href="https://maisonlooks.com/zh/products" target="_blank" rel="noopener noreferrer">Open MaisonLooks all products</a>.';
