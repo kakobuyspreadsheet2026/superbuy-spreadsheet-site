@@ -180,11 +180,13 @@ async function loadPage() {
       state.done = true;
       if (btn) btn.hidden = true;
       if (status) {
-        const hint =
-          state.offset === 0
-            ? "No products. Check Vercel env MATRIX_API_KEY (or MAISONLOOKS_API_KEY) and redeploy."
-            : "End of list.";
-        status.textContent = hint;
+        if (state.offset === 0) {
+          status.textContent = state.category
+            ? "No products in this category right now. Try “All categories” or another category."
+            : "No products to show for “All categories” yet. Try picking one category from the list.";
+        } else {
+          status.textContent = "End of list.";
+        }
       }
       return;
     }
