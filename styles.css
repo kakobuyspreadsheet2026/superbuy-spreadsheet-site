@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* 页面左右与屏幕边缘的留白（大屏更宽、小屏至少约 1.5rem） */
+  --layout-pad-x: clamp(1.5rem, 6vw, 5rem);
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -53,9 +58,8 @@ body {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  padding: 0.65rem clamp(0.75rem, 4vw, 1.75rem);
-  padding-left: max(0.75rem, env(safe-area-inset-left));
-  padding-right: max(0.75rem, env(safe-area-inset-right));
+  padding: 0.65rem max(var(--layout-pad-x), env(safe-area-inset-right)) 0.65rem
+    max(var(--layout-pad-x), env(safe-area-inset-left));
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
 }
@@ -65,7 +69,8 @@ body {
   align-items: stretch;
   flex-wrap: nowrap;
   gap: 0.2rem;
-  padding: 0.35rem max(0.5rem, env(safe-area-inset-left)) 0.35rem max(0.5rem, env(safe-area-inset-right));
+  padding: 0.35rem max(var(--layout-pad-x), env(safe-area-inset-right)) 0.35rem
+    max(var(--layout-pad-x), env(safe-area-inset-left));
   background: #2c7a94;
   border-bottom: 1px solid #256b82;
   overflow-x: auto;
@@ -321,9 +326,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 1.25rem clamp(0.75rem, 4vw, 3rem);
-  padding-left: max(0.75rem, env(safe-area-inset-left));
-  padding-right: max(0.75rem, env(safe-area-inset-right));
+  padding: 1.25rem max(var(--layout-pad-x), env(safe-area-inset-right)) 1.75rem
+    max(var(--layout-pad-x), env(safe-area-inset-left));
   background-color: #c8d8e6;
   background-image: url("assets/hero.png");
   background-size: cover;
@@ -395,7 +399,8 @@ body {
 }
 
 .main {
-  padding: 1.5rem max(0.75rem, env(safe-area-inset-right)) 4rem max(0.75rem, env(safe-area-inset-left));
+  padding: 1.5rem max(var(--layout-pad-x), env(safe-area-inset-right)) 4rem
+    max(var(--layout-pad-x), env(safe-area-inset-left));
   display: flex;
   flex-direction: column;
   align-items: center;
