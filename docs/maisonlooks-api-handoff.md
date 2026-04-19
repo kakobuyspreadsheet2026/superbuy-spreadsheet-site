@@ -8,10 +8,11 @@ updated_at: 2026-04-19
 
 # MaisonLooks Public API — Handoff
 
-## Vercel (this site)
+## Deploy (this repo)
 
-1. Project → **Settings → Environment Variables**: add `MATRIX_API_KEY` = your key (Production + Preview).
-2. Redeploy. The **Products** page (`/products.html`) calls `/api/categories` and `/api/products` on the same origin (serverless proxies; key never ships to the browser).
+1. Vercel → **Environment Variables**: `MATRIX_API_KEY` (Production + Preview).
+2. Routes: `/api/categories`, `/api/products`, `/api/outfits` are serverless proxies; the browser never sees the key.
+3. Pages: `index.html` (categories bar from API), `products.html` (catalog + `?category=`), `outfits.html` (outfits grid).
 
 ## Auth
 

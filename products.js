@@ -157,6 +157,13 @@ async function loadPage() {
   }
 }
 
+function syncCategoryUrl() {
+  const u = new URL(window.location.href);
+  if (state.category) u.searchParams.set("category", state.category);
+  else u.searchParams.delete("category");
+  history.replaceState({}, "", u.pathname + u.search + u.hash);
+}
+
 function onFilterChange() {
   const sel = document.getElementById("filter-cat");
   state.category = sel ? sel.value : "";
@@ -170,16 +177,29 @@ function onFilterChange() {
     btn.hidden = false;
     btn.disabled = false;
   }
+  syncCategoryUrl();
   loadPage();
 }
 
-function init() {
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const urlCat = params.get("category");
+  if (urlCat) state.category = urlCat;
+
   const sel = document.getElementById("filter-cat");
   if (sel) sel.addEventListener("change", onFilterChange);
   const btn = document.getElementById("load-more");
   if (btn) btn.addEventListener("click", () => loadPage());
 
-  loadCategories().then(() => loadPage());
+  await loadCategories();
+  if (sel && state.category) {
+    sel.value = state.category;
+    if (sel.value !== state.category) {
+      state.category = "";
+      syncCategoryUrl();
+    }
+  }
+  loadPage();
 }
 
 init();

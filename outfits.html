@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
-    <title>All products · The best spreadsheet 2026</title>
+    <title>Outfits · The best spreadsheet 2026</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,40 +13,38 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body class="page-products">
+  <body class="page-outfits">
     <header class="site-header">
       <div class="topbar">
         <a class="topbar__logo" href="index.html">The best spreadsheet 2026</a>
         <nav class="topbar__nav topbar__nav--compact" aria-label="Primary">
           <a class="topbar__link" href="index.html">Home</a>
-          <a class="topbar__link" href="products.html" aria-current="page">Products</a>
-          <a class="topbar__link" href="outfits.html">Outfits</a>
+          <a class="topbar__link" href="products.html">Products</a>
+          <a class="topbar__link" href="outfits.html" aria-current="page">Outfits</a>
         </nav>
       </div>
     </header>
 
     <main class="products-main">
       <div class="products-toolbar">
-        <h1 class="products-main__title">All products</h1>
+        <h1 class="products-main__title">Outfits</h1>
         <div class="products-toolbar__row">
-          <label class="products-filter">
-            <span class="products-filter__label">Category</span>
-            <select id="filter-cat" class="products-filter__select" aria-label="Filter by category">
-              <option value="">All categories</option>
-            </select>
+          <label class="products-filter products-filter--inline">
+            <input type="checkbox" id="filter-featured" checked />
+            <span>Featured only</span>
           </label>
         </div>
       </div>
 
-      <p id="products-status" class="products-status" role="status"></p>
+      <p id="outfits-status" class="products-status" role="status"></p>
 
-      <div id="product-grid" class="product-grid"></div>
+      <div id="outfit-grid" class="outfit-grid"></div>
 
       <div class="products-actions">
-        <button type="button" id="load-more" class="products-load-more">Load more</button>
+        <button type="button" id="load-more-outfits" class="products-load-more">Load more</button>
       </div>
     </main>
 
-    <script src="products.js" defer></script>
+    <script src="outfits.js" defer></script>
   </body>
 </html>
