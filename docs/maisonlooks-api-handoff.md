@@ -14,6 +14,17 @@ updated_at: 2026-04-19
 2. Routes: `/api/categories`, `/api/products`, `/api/outfits` are serverless proxies; the browser never sees the key.
 3. Pages: `index.html` (categories bar from API), `products.html` (catalog + `?category=`), `outfits.html` (outfits grid).
 
+**Do not commit API keys.** GitHub 里只保留占位说明；真实密钥只放在下面两处之一，**永远不要**写进 `docs/` 或任何会 push 的文件。
+
+## Local (your machine only)
+
+1. 复制 `.env.example` 为 **`.env.local`**（已在 `.gitignore` 中，不会被提交）。
+2. 在 `.env.local` 里填写：`MATRIX_API_KEY=你的密钥`（从 MaisonLooks 或你本地的交接文档里复制）。
+3. 本地运行 **`vercel dev`** 时，会自动读取 `.env.local`；或用  
+   `MATRIX_API_KEY=... node scripts/fetch-products.mjs`.
+
+线上仍用 Vercel 后台的环境变量，与本地 `.env.local` 相互独立。
+
 ## Auth
 
 - Header: `X-API-Key: <your key>` (set via env `MATRIX_API_KEY` — **never commit or expose in browser**)
