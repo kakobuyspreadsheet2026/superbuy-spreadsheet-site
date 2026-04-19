@@ -397,11 +397,11 @@ function onFilterChange() {
 }
 
 async function init() {
+  const sel = document.getElementById("filter-cat");
   const params = new URLSearchParams(window.location.search);
   const urlCat = params.get("category");
-  if (urlCat) state.category = urlCat;
-
-  const sel = document.getElementById("filter-cat");
+  /** Only `/products` has a category control; ignore `?category=` on the homepage or it blocks seed hydration. */
+  if (sel && urlCat) state.category = urlCat;
   if (sel) sel.addEventListener("change", onFilterChange);
 
   const isHome = document.body?.classList.contains("page-home");
