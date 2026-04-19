@@ -95,21 +95,46 @@ function formatPrice(p) {
   return "—";
 }
 
+const PRODUCT_ALT_MAX = 160;
+
+/** Descriptive img alt for search + a11y (title · brand · price). */
+function productImageAlt(p) {
+  if (!p || typeof p !== "object") return "Product listing";
+  const title = String(p.title || p.slug || "Product listing").trim();
+  const brand = p.brand && String(p.brand).trim();
+  const priceStr = formatPrice(p);
+  const parts = [title];
+  if (brand) parts.push(brand);
+  if (priceStr && priceStr !== "—") parts.push(priceStr);
+  let s = parts.join(" · ");
+  if (s.length > PRODUCT_ALT_MAX) s = s.slice(0, PRODUCT_ALT_MAX - 1) + "…";
+  return s;
+}
+
 /** `homeIndex` (homepage only): 0-based slot so the first tiles use eager + fetchPriority high. */
 function cardEl(p, opts = {}) {
   const a = document.createElement("a");
   a.className = "product-card";
-  a.href = ML_PRODUCT + encodeURIComponent(p.slug);
+  const productUrl = ML_PRODUCT + encodeURIComponent(p.slug);
+  a.href = productUrl;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
+  a.setAttribute("itemscope", "");
+  a.setAttribute("itemtype", "https://schema.org/Product");
+
+  const metaUrl = document.createElement("meta");
+  metaUrl.setAttribute("itemprop", "url");
+  metaUrl.setAttribute("content", productUrl);
 
   const img = document.createElement("img");
   img.className = "product-card__img";
   img.src = primaryImageUrl(p);
-  img.alt = "";
+  img.alt = productImageAlt(p);
+  img.setAttribute("itemprop", "image");
   img.decoding = "async";
   img.onerror = () => {
     img.removeAttribute("src");
+    img.removeAttribute("itemprop");
     img.classList.add("product-card__img--placeholder");
   };
 
@@ -129,35 +154,48 @@ function cardEl(p, opts = {}) {
   }
   if (imageOnly) {
     a.classList.add("product-card--image-only");
-    const bits = [p.title || p.slug, p.brand, formatPrice(p)].filter(Boolean);
-    a.setAttribute("aria-label", bits.join(" · "));
+    const nameVis = document.createElement("span");
+    nameVis.className = "visually-hidden";
+    nameVis.setAttribute("itemprop", "name");
+    nameVis.textContent = String(p.title || p.slug || "Product").trim();
+    a.appendChild(metaUrl);
+    a.appendChild(img);
+    if (p.brand) {
+      const brandMeta = document.createElement("meta");
+      brandMeta.setAttribute("itemprop", "brand");
+      brandMeta.setAttribute("content", String(p.brand).trim());
+      a.appendChild(brandMeta);
+    }
+    a.appendChild(nameVis);
+    return a;
   }
 
+  a.appendChild(metaUrl);
   a.appendChild(img);
 
-  if (!imageOnly) {
-    const body = document.createElement("div");
-    body.className = "product-card__body";
+  const body = document.createElement("div");
+  body.className = "product-card__body";
 
-    if (p.brand) {
-      const brand = document.createElement("div");
-      brand.className = "product-card__brand";
-      brand.textContent = p.brand;
-      body.appendChild(brand);
-    }
-
-    const title = document.createElement("div");
-    title.className = "product-card__title";
-    title.textContent = p.title || p.slug;
-
-    const price = document.createElement("div");
-    price.className = "product-card__price";
-    price.textContent = formatPrice(p);
-
-    body.appendChild(title);
-    body.appendChild(price);
-    a.appendChild(body);
+  if (p.brand) {
+    const brand = document.createElement("div");
+    brand.className = "product-card__brand";
+    brand.setAttribute("itemprop", "brand");
+    brand.textContent = p.brand;
+    body.appendChild(brand);
   }
+
+  const title = document.createElement("div");
+  title.className = "product-card__title";
+  title.setAttribute("itemprop", "name");
+  title.textContent = p.title || p.slug;
+
+  const price = document.createElement("div");
+  price.className = "product-card__price";
+  price.textContent = formatPrice(p);
+
+  body.appendChild(title);
+  body.appendChild(price);
+  a.appendChild(body);
 
   return a;
 }
