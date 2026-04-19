@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>All products · The best spreadsheet 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="page-products">
+    <header class="site-header">
+      <div class="topbar">
+        <a class="topbar__logo" href="index.html">The best spreadsheet 2026</a>
+        <nav class="topbar__nav topbar__nav--compact" aria-label="Primary">
+          <a class="topbar__link" href="index.html">Home</a>
+          <a class="topbar__link" href="products.html" aria-current="page">Products</a>
+          <a class="topbar__link" href="index.html#api-handoff">API</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="products-main">
+      <div class="products-toolbar">
+        <h1 class="products-main__title">All products</h1>
+        <div class="products-toolbar__row">
+          <label class="products-filter">
+            <span class="products-filter__label">Category</span>
+            <select id="filter-cat" class="products-filter__select" aria-label="Filter by category">
+              <option value="">All categories</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <p id="products-status" class="products-status" role="status"></p>
+
+      <div id="product-grid" class="product-grid"></div>
+
+      <div class="products-actions">
+        <button type="button" id="load-more" class="products-load-more">Load more</button>
+      </div>
+    </main>
+
+    <script src="products.js" defer></script>
+  </body>
+</html>
