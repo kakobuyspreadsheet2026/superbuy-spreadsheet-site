@@ -7,8 +7,17 @@ async function initTopbarCategories() {
 
   try {
     const r = await fetch("/api/categories");
-    const data = await r.json();
-    if (!r.ok) {
+    const parsed = await readApiJson(r);
+    if (parsed.bodyError) {
+      nav.innerHTML = "";
+      const span = document.createElement("span");
+      span.className = "topbar-cats__fallback";
+      span.textContent = parsed.bodyError;
+      nav.appendChild(span);
+      return;
+    }
+    const data = parsed.json;
+    if (!parsed.ok) {
       nav.innerHTML =
         '<span class="topbar-cats__fallback">Categories unavailable — check MATRIX_API_KEY on the server.</span>';
       return;

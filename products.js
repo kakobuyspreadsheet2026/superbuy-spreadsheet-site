@@ -98,8 +98,15 @@ async function loadCategories() {
   if (!sel) return;
   try {
     const r = await fetch("/api/categories");
-    const data = await r.json();
-    if (!r.ok) {
+    const parsed = await readApiJson(r);
+    if (parsed.bodyError) {
+      sel.disabled = true;
+      const st = document.getElementById("products-status");
+      if (st) st.textContent = parsed.bodyError;
+      return;
+    }
+    const data = parsed.json;
+    if (!parsed.ok) {
       sel.disabled = true;
       return;
     }
@@ -141,9 +148,16 @@ async function loadPage() {
 
   try {
     const r = await fetch("/api/products?" + params.toString());
-    const json = await r.json();
+    const parsed = await readApiJson(r);
+    if (parsed.bodyError) {
+      if (status) status.textContent = parsed.bodyError;
+      state.done = true;
+      if (btn) btn.hidden = true;
+      return;
+    }
+    const json = parsed.json;
 
-    if (!r.ok) {
+    if (!parsed.ok) {
       const msg = json.error || json.message || "Request failed";
       if (status) status.textContent = typeof msg === "string" ? msg : JSON.stringify(msg);
       state.done = true;
