@@ -6,9 +6,9 @@
   /** Chinese site base; category pages are /zh/c/{slug} per API handoff */
   const ML_ZH = "https://maisonlooks.com/zh";
 
-  /** `slug` → `${ML_ZH}/c/{slug}`. Use `href` only for "All products" or one-off URLs. */
+  /** `slug` → `${ML_ZH}/c/{slug}`. "All products" → `/zh/search` (full catalog), not `/zh/` (marketing home). */
   const LINKS = [
-    { label: "All products", href: `${ML_ZH}/` },
+    { label: "All products", href: `${ML_ZH}/search` },
     { label: "Sneakers", slug: "sneakers" },
     { label: "Boots", slug: "boots" },
     { label: "Sandals & Slippers", slug: "sandals-slippers" },
@@ -27,7 +27,7 @@
 
   function itemHref(item) {
     if (item.slug) return `${ML_ZH}/c/${encodeURIComponent(item.slug)}`;
-    return item.href || `${ML_ZH}/`;
+    return item.href || `${ML_ZH}/search`;
   }
 
   let debounceTimer;
