@@ -1,13 +1,19 @@
 /**
  * Proxies GET /public/v1/categories (key from MATRIX_API_KEY on Vercel).
  */
+const { normalizeCategories } = require("./ml-parse");
+
+function apiKey() {
+  return process.env.MATRIX_API_KEY || process.env.MAISONLOOKS_API_KEY || "";
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
 
-  const key = process.env.MATRIX_API_KEY;
+  const key = apiKey();
   if (!key) {
     res.status(503).json({ error: "MATRIX_API_KEY is not configured on the server" });
     return;
@@ -22,9 +28,15 @@ module.exports = async function handler(req, res) {
     try {
       body = JSON.parse(text);
     } catch {
-      body = { error: "Invalid JSON from upstream", raw: text.slice(0, 200) };
+      res.status(502).json({ error: "Invalid JSON from upstream", raw: text.slice(0, 200) });
+      return;
     }
-    res.status(r.status).json(body);
+    if (!r.ok) {
+      res.status(r.status).json(body);
+      return;
+    }
+    const list = normalizeCategories(body);
+    res.status(200).json({ data: list });
   } catch (e) {
     res.status(502).json({ error: String(e.message || e) });
   }

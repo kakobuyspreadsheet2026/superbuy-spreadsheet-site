@@ -1,10 +1,15 @@
 /**
  * Proxies GET /public/v1/products?category=&limit=&offset=
  *
- * Reference: scripts/fetch-products.mjs — it always requests products *per category*.
- * If the upstream returns an empty list when `category` is omitted, we aggregate:
- * GET /categories, then walk each slug with ?category=&limit=&offset= (max 100 per MD).
+ * When `category` is omitted, aggregates like scripts/fetch-products.mjs:
+ * GET /categories, then GET /products?category=… per slug (max 100 per request per MD).
  */
+const {
+  normalizeCategories,
+  normalizeProductList,
+  categorySlug,
+} = require("./ml-parse");
+
 const UPSTREAM = "https://api.maisonlooks.com/public/v1";
 
 function mergeQuery(req) {
@@ -32,19 +37,6 @@ function clampOffset(v) {
   return Number.isNaN(n) || n < 0 ? 0 : n;
 }
 
-function normalizeProductList(body) {
-  if (Array.isArray(body)) return body;
-  if (!body || typeof body !== "object") return [];
-  if (Array.isArray(body.data)) return body.data;
-  return [];
-}
-
-function normalizeCategories(body) {
-  if (Array.isArray(body)) return body;
-  if (body && typeof body === "object" && Array.isArray(body.data)) return body.data;
-  return [];
-}
-
 async function fetchUpstreamJson(url, key) {
   const r = await fetch(url, {
     headers: { "X-API-Key": key, Accept: "application/json" },
@@ -64,17 +56,12 @@ async function fetchUpstreamJson(url, key) {
   return { ok: true, status: r.status, json };
 }
 
-/**
- * Walk categories in API order; skip `offset` products globally, then take up to `limit`.
- * Matches how scripts/fetch-products.mjs builds the catalog.
- */
 async function aggregateProductsAcrossCategories(key, limit, offset) {
   const catRes = await fetchUpstreamJson(`${UPSTREAM}/categories`, key);
   if (!catRes.ok) return { status: catRes.status, json: catRes.json };
 
-  const slugs = normalizeCategories(catRes.json)
-    .map((c) => c.slug)
-    .filter(Boolean);
+  const rows = normalizeCategories(catRes.json);
+  const slugs = rows.map(categorySlug).filter(Boolean);
   if (!slugs.length) {
     return {
       status: 200,
@@ -85,6 +72,8 @@ async function aggregateProductsAcrossCategories(key, limit, offset) {
   let skip = offset;
   const out = [];
   const PAGE = 100;
+  /** Until we get at least one HTTP 200 from /products, surface upstream errors (e.g. 401). */
+  let sawSuccessfulProductResponse = false;
 
   for (const slug of slugs) {
     let catOff = 0;
@@ -96,8 +85,13 @@ async function aggregateProductsAcrossCategories(key, limit, offset) {
       });
       const p = await fetchUpstreamJson(`${UPSTREAM}/products?${sp}`, key);
       if (!p.ok) {
+        if (!sawSuccessfulProductResponse) {
+          return { status: p.status, json: p.json };
+        }
         break;
       }
+      sawSuccessfulProductResponse = true;
+
       const page = normalizeProductList(p.json);
       if (!page.length) break;
 
@@ -138,7 +132,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const key = process.env.MATRIX_API_KEY;
+  const key = process.env.MATRIX_API_KEY || process.env.MAISONLOOKS_API_KEY || "";
   if (!key) {
     res.status(503).json({ error: "MATRIX_API_KEY is not configured on the server" });
     return;

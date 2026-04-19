@@ -88,7 +88,13 @@ async function loadCategories() {
       sel.disabled = true;
       return;
     }
-    const list = Array.isArray(data) ? data : data.data || [];
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data?.categories)
+          ? data.categories
+          : [];
     const sorted = [...list].sort((a, b) =>
       String(a.name || a.slug).localeCompare(String(b.name || b.slug)),
     );
@@ -144,7 +150,13 @@ async function loadPage() {
     if (items.length === 0) {
       state.done = true;
       if (btn) btn.hidden = true;
-      if (status) status.textContent = state.offset === 0 ? "No products in this filter." : "End of list.";
+      if (status) {
+        const hint =
+          state.offset === 0
+            ? "No products. Check Vercel env MATRIX_API_KEY (or MAISONLOOKS_API_KEY) and redeploy."
+            : "End of list.";
+        status.textContent = hint;
+      }
       return;
     }
 

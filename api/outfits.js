@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const key = process.env.MATRIX_API_KEY;
+  const key = process.env.MATRIX_API_KEY || process.env.MAISONLOOKS_API_KEY || "";
   if (!key) {
     res.status(503).json({ error: "MATRIX_API_KEY is not configured on the server" });
     return;

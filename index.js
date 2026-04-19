@@ -14,7 +14,13 @@ async function initTopbarCategories() {
       return;
     }
 
-    const list = Array.isArray(data) ? data : data.data || [];
+    const list = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data?.categories)
+          ? data.categories
+          : [];
     nav.innerHTML = "";
 
     const sorted = [...list].sort((a, b) =>
