@@ -12,7 +12,7 @@ updated_at: 2026-04-19
 
 1. Vercel → **Environment Variables**: `MATRIX_API_KEY` (Production + Preview).
 2. Routes: `/api/categories`, `/api/products`, `/api/outfits` are serverless proxies; the browser never sees the key.
-3. Pages: `index.html` (hero + category bar with wrap layout + apparel-related categories first + image-only grid; scroll loads more, `limit=200`; `?category=` from top bar), `products.html` (full catalog UI, `limit=48` + Load more + `?category=`), `outfits.html` (outfits grid).
+3. Pages: `index.html` (hero + category bar: shoe/clothing links visible, rest under **更多分类** `<details>`; image-only grid; scroll loads more, `limit=200`; `?category=` from top bar), `products.html` (full catalog UI, `limit=48` + Load more + `?category=`), `outfits.html` (outfits grid).
 
 **Caching:** Successful JSON responses set `Cache-Control` (`s-maxage` for CDN, `max-age` for browser). Serverless handlers also keep a short in-memory TTL cache (warm instance). The static `api-parse.js` uses `fetchApiJson()` with a per-URL memory cache in the tab to avoid duplicate fetches (e.g. categories requested from both `index.js` and `products.js`).
 

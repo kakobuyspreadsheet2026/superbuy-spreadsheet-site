@@ -32,14 +32,48 @@ async function initTopbarCategories() {
     nav.innerHTML = "";
 
     const sorted = sortCategoriesApparelFirst(list);
+    let primary = sorted.filter(isShoeClothingCategory);
+    let more = sorted.filter((c) => !isShoeClothingCategory(c));
+    if (primary.length === 0 && more.length > 0) {
+      primary = sorted;
+      more = [];
+    }
 
-    for (const c of sorted) {
+    function appendCatLink(container, c) {
       const a = document.createElement("a");
       a.className = "topbar-cats__link";
       a.href = "?category=" + encodeURIComponent(c.slug);
       a.textContent = c.name || c.slug;
-      nav.appendChild(a);
+      container.appendChild(a);
     }
+
+    const primaryRow = document.createElement("div");
+    primaryRow.className = "topbar-cats__primary";
+
+    for (const c of primary) {
+      appendCatLink(primaryRow, c);
+    }
+
+    if (more.length > 0) {
+      const details = document.createElement("details");
+      details.className = "topbar-cats__more";
+
+      const summary = document.createElement("summary");
+      summary.className = "topbar-cats__link topbar-cats__more-summary";
+      summary.textContent = "更多分类";
+
+      const dropdown = document.createElement("div");
+      dropdown.className = "topbar-cats__more-dropdown";
+      for (const c of more) {
+        appendCatLink(dropdown, c);
+      }
+
+      details.appendChild(summary);
+      details.appendChild(dropdown);
+      primaryRow.appendChild(details);
+    }
+
+    nav.appendChild(primaryRow);
   } catch {
     nav.innerHTML =
       '<span class="topbar-cats__fallback">Could not load categories.</span>';

@@ -105,6 +105,11 @@ function sortCategoriesApparelFirst(list) {
   });
 }
 
+/** Shoe + clothing only (rank 0–1). Bags/accessories (2) and other (50) → "更多分类". */
+function isShoeClothingCategory(c) {
+  return categoryApparelRank(c) <= 1;
+}
+
 /**
  * GET JSON from same-origin /api (or __API_ORIGIN__). Caches parsed result briefly to avoid duplicate work.
  * @param {string} pathOrUrl e.g. "/api/categories" or "/api/products?limit=48&offset=0"
