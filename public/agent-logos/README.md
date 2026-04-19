@@ -1,0 +1,28 @@
+# Agent logos (fetched from official sites)
+
+- **acbuy**: `acbuy.ico` ← https://acbuy.com/favicon1.ico
+- **allchinabuy**: `allchinabuy.ico` ← https://www.allchinabuy.com/favicon.ico
+- **basetao**: `basetao.ico` ← https://www.basetao.com/style/index/img/favicon.ico
+- **cnfans**: `cnfans.png` ← https://cnfans.com/site.ico
+- **cnshopper**: `cnshopper.png` ← https://cnshopper.com/build/assets/images/favicon-VUcCTndi.ico
+- **cssbuy**: failed homepage fetch
+- **eastmallbuy**: no file saved (blocked or no icon)
+- **fishgoo**: `fishgoo.ico` ← https://www.fishgoo.com/favicon.ico
+- **gtbuy**: `gtbuy.png` ← https://www.gtbuy.com/static/favicon/32x32.png
+- **hipobuy**: `hipobuy.png` ← https://hipobuy.com/static/favicon/32x32.png
+- **hoobuy**: `hoobuy.ico` ← https://cdn.static.hoobuy.com/favicon/favicon_32.ico
+- **hubbuycn**: `hubbuycn.png` ← https://www.hubbuycn.com/favicon.ico
+- **itaobuy**: `itaobuy.png` ← https://itaobuys.com/favicon.ico
+- **joyagoo**: failed homepage fetch
+- **kakobuy**: `kakobuy.ico` ← https://kakobuy.com/favicon.ico
+- **kameymall**: `kameymall.png` ← https://www.kameymall.com/favicon.ico
+- **litbuy**: `litbuy.png` ← https://litbuy.com/static/favicon/favicon-new.ico
+- **loongbuy**: failed homepage fetch
+- **lovegobuy**: failed homepage fetch
+- **mulebuy**: `mulebuy.png` ← https://mulebuy.com/apple-touch-icon.png
+- **oopbuy**: `oopbuy.ico` ← https://oopbuy.com/favicon.ico
+- **orientdig**: `orientdig.png` ← https://orientdig.com/site.ico
+- **ponybuy**: failed homepage fetch
+- **sugargoo**: `sugargoo.png` ← https://www.sugargoo.com/favicon.ico
+- **superbuy**: `superbuy.png` ← https://cdn.superbuy.com/starit-superbuy/dist/img/favicon/favicon-180x180.png
+- **usfans**: `usfans.png` ← https://usfans.com/icon1.png

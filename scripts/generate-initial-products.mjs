@@ -2,7 +2,7 @@
 /**
  * Writes public/initial-products.json for instant homepage paint (same shape as GET /api/products).
  * Set SEED_API_URL to your deployed API, e.g.
- *   SEED_API_URL=https://YOUR_PROJECT.vercel.app/api/products?limit=200&offset=0
+ *   SEED_API_URL=https://buysspreadsheet.com/api/products?limit=200&offset=0
  * Run locally before deploy, or add as Vercel Build Command with that env var.
  */
 import fs from "node:fs/promises";

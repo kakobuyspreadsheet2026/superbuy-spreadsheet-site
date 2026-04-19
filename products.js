@@ -1,8 +1,12 @@
 const ML_PRODUCT = "https://maisonlooks.com/zh/p/";
 /** Default batch size on the standalone products page. */
 const PAGE_LIMIT = 48;
-/** First batch on the homepage (image grid): show more items per load. */
-const PAGE_LIMIT_HOME = 200;
+/** Homepage image grid: fixed cap; “查看更多” links to the full catalog page. */
+const HOME_GRID_MAX_ITEMS = 200;
+/** Chunk size per /api/products request when filling the home grid. */
+const PAGE_LIMIT_HOME = 100;
+/** Homepage: first N cards use eager images + fetchPriority high (~2 rows × 6 cols at lg). */
+const HOME_EAGER_IMAGE_COUNT = 12;
 
 function pageLimit() {
   return document.body?.classList.contains("page-home") ? PAGE_LIMIT_HOME : PAGE_LIMIT;
@@ -56,7 +60,8 @@ function formatPrice(p) {
   return "—";
 }
 
-function cardEl(p) {
+/** `homeIndex` (homepage only): 0-based slot so the first tiles use eager + fetchPriority high. */
+function cardEl(p, opts = {}) {
   const a = document.createElement("a");
   a.className = "product-card";
   a.href = ML_PRODUCT + encodeURIComponent(p.slug);
@@ -67,7 +72,6 @@ function cardEl(p) {
   img.className = "product-card__img";
   img.src = primaryImageUrl(p);
   img.alt = "";
-  img.loading = "lazy";
   img.decoding = "async";
   img.onerror = () => {
     img.removeAttribute("src");
@@ -75,6 +79,19 @@ function cardEl(p) {
   };
 
   const imageOnly = document.body?.classList.contains("page-home");
+  const hi =
+    imageOnly &&
+    typeof opts.homeIndex === "number" &&
+    opts.homeIndex >= 0 &&
+    opts.homeIndex < HOME_EAGER_IMAGE_COUNT;
+  if (hi) {
+    img.loading = "eager";
+    if ("fetchPriority" in img) {
+      img.fetchPriority = "high";
+    }
+  } else {
+    img.loading = "lazy";
+  }
   if (imageOnly) {
     a.classList.add("product-card--image-only");
     const bits = [p.title || p.slug, p.brand, formatPrice(p)].filter(Boolean);
@@ -191,33 +208,39 @@ async function hydrateInitialProducts() {
   const grid = document.getElementById("product-grid");
   if (!grid) return;
 
-  const limit = pageLimit();
   const meta = json.meta || {};
   if (typeof meta.total === "number") state.total = meta.total;
 
-  for (const p of items) {
-    grid.appendChild(cardEl(p));
-  }
-  state.offset = items.length;
+  const cap = document.body?.classList.contains("page-home") ? HOME_GRID_MAX_ITEMS : items.length;
+  const slice = items.slice(0, cap);
+  slice.forEach((p, i) => {
+    grid.appendChild(cardEl(p, { homeIndex: i }));
+  });
+  state.offset = slice.length;
 
-  if (items.length < limit || (state.total != null && state.offset >= state.total)) {
+  const limit = pageLimit();
+  if (document.body?.classList.contains("page-home")) {
+    state.done = grid.children.length >= HOME_GRID_MAX_ITEMS;
+  } else if (items.length < limit || (state.total != null && state.offset >= state.total)) {
     state.done = true;
   } else {
     state.done = false;
   }
 }
 
-/** If the sentinel is still in view after a batch (short viewport), load again without waiting for scroll. */
-function maybePrefetchMoreHome() {
-  if (!document.body?.classList.contains("page-home") || state.done || state.loading) return;
-  const el = document.getElementById("catalog-sentinel");
-  if (!el) return;
-  const rect = el.getBoundingClientRect();
-  if (rect.top < window.innerHeight + 480) loadPage();
+function homeGridSlotsRemaining() {
+  const grid = document.getElementById("product-grid");
+  if (!grid || !document.body?.classList.contains("page-home")) return Infinity;
+  return Math.max(0, HOME_GRID_MAX_ITEMS - grid.children.length);
 }
 
 async function loadPage() {
   if (state.loading || state.done) return;
+  const homeRemain = homeGridSlotsRemaining();
+  if (document.body?.classList.contains("page-home") && homeRemain === 0) {
+    state.done = true;
+    return;
+  }
   state.loading = true;
   const btn = document.getElementById("load-more");
   const status = document.getElementById("products-status");
@@ -225,7 +248,10 @@ async function loadPage() {
   if (btn) btn.disabled = true;
   if (status) status.textContent = "Loading…";
 
-  const limit = pageLimit();
+  let limit = pageLimit();
+  if (document.body?.classList.contains("page-home")) {
+    limit = Math.max(1, Math.min(limit, homeRemain));
+  }
   const params = new URLSearchParams({
     limit: String(limit),
     offset: String(state.offset),
@@ -276,13 +302,32 @@ async function loadPage() {
       return;
     }
 
+    let appended = 0;
     for (const p of items) {
-      grid.appendChild(cardEl(p));
+      if (document.body?.classList.contains("page-home") && grid.children.length >= HOME_GRID_MAX_ITEMS) {
+        break;
+      }
+      const homeIdx = document.body?.classList.contains("page-home") ? grid.children.length : undefined;
+      grid.appendChild(cardEl(p, homeIdx !== undefined ? { homeIndex: homeIdx } : {}));
+      appended++;
     }
 
-    state.offset += items.length;
+    if (document.body?.classList.contains("page-home")) {
+      while (grid.children.length > HOME_GRID_MAX_ITEMS) {
+        grid.removeChild(grid.lastElementChild);
+      }
+      state.offset = grid.children.length;
+    } else {
+      state.offset += appended;
+    }
 
-    if (items.length < limit || (state.total != null && state.offset >= state.total)) {
+    if (document.body?.classList.contains("page-home")) {
+      state.done =
+        grid.children.length >= HOME_GRID_MAX_ITEMS ||
+        appended < items.length ||
+        items.length < limit ||
+        (state.total != null && state.offset >= state.total);
+    } else if (items.length < limit || (state.total != null && state.offset >= state.total)) {
       state.done = true;
       if (btn) btn.hidden = true;
     } else if (btn) {
@@ -310,9 +355,6 @@ async function loadPage() {
   } finally {
     state.loading = false;
     if (btn && !state.done) btn.disabled = false;
-    if (document.body?.classList.contains("page-home") && !state.done) {
-      requestAnimationFrame(() => maybePrefetchMoreHome());
-    }
   }
 }
 
@@ -361,20 +403,21 @@ async function init() {
     }
   }
   await hydrateInitialProducts();
-  await loadPage();
-
   if (isHome) {
-    const sentinel = document.getElementById("catalog-sentinel");
-    if (sentinel) {
-      new IntersectionObserver(
-        (entries) => {
-          for (const e of entries) {
-            if (e.isIntersecting) loadPage();
-          }
-        },
-        { root: null, rootMargin: "520px", threshold: 0 },
-      ).observe(sentinel);
+    let guard = 0;
+    const maxBatches = 20;
+    while (!state.done && guard++ < maxBatches) {
+      await loadPage();
     }
+    const grid = document.getElementById("product-grid");
+    const emptyEl = document.getElementById("home-grid-empty");
+    if (grid && emptyEl && grid.children.length === 0) {
+      emptyEl.hidden = false;
+      emptyEl.textContent =
+        "Could not load products (check network, or Vercel MATRIX_API_KEY for /api/products). Try refreshing or open the full catalog.";
+    }
+  } else {
+    await loadPage();
   }
 }
 

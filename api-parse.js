@@ -2,7 +2,8 @@
  * Parse same-origin /api/* responses. Static servers and file:// return HTML → JSON.parse throws.
  * Load this script before products.js / outfits.js (and any page using fetchApiJson).
  *
- * On production domains, requests stay same-origin (/api). __API_ORIGIN__ is only set for localhost / file (see HTML).
+ * On production (e.g. buysspreadsheet.com), requests stay same-origin (/api).
+ * __API_ORIGIN__ points at the deployed API for localhost / 127.0.0.1 / file:// (see HTML).
  */
 function apiUrl(path) {
   if (typeof window === "undefined") return path;
