@@ -23,6 +23,21 @@ function normalizeProductList(json) {
   return [];
 }
 
+/** Public API uses `images: string[]`; some payloads may use a single URL field. */
+function primaryImageUrl(p) {
+  if (!p || typeof p !== "object") return "";
+  if (Array.isArray(p.images) && p.images[0]) return String(p.images[0]);
+  const single =
+    p.imageUrl ||
+    p.thumbnailUrl ||
+    p.coverImage ||
+    p.primaryImage ||
+    p.thumbnail ||
+    p.image;
+  if (typeof single === "string" && single) return single;
+  return "";
+}
+
 function formatPrice(p) {
   if (p.priceCny != null) return `¥${Number(p.priceCny).toFixed(0)}`;
   if (Array.isArray(p.priceCnyRange) && p.priceCnyRange.length === 2) {
@@ -43,7 +58,7 @@ function cardEl(p) {
 
   const img = document.createElement("img");
   img.className = "product-card__img";
-  img.src = (p.images && p.images[0]) || "";
+  img.src = primaryImageUrl(p);
   img.alt = "";
   img.loading = "lazy";
   img.decoding = "async";
