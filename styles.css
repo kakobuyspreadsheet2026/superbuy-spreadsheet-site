@@ -5,23 +5,31 @@
 }
 
 :root {
-  /* 页面左右与屏幕边缘的留白（大屏更宽、小屏至少约 1.5rem） */
-  --layout-pad-x: clamp(1.5rem, 6vw, 5rem);
+  /* 页面左右留白：小屏更贴边，大屏保持呼吸感 */
+  --layout-pad-x: clamp(0.75rem, 4vw, 5rem);
 }
 
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  width: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 html,
 body {
   margin: 0;
   min-height: 100%;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 body {
+  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
   font-family:
     Inter,
@@ -480,7 +488,13 @@ body {
 
 /* Home catalog: use more viewport width; avoid double horizontal padding (main + section) */
 .main:has(.products-main--home) {
-  padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  padding-inline: max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right));
+}
+
+@media (max-width: 640px) {
+  .main:has(.products-main--home) {
+    padding-inline: max(0px, env(safe-area-inset-left)) max(0px, env(safe-area-inset-right));
+  }
 }
 
 @supports (padding: max(0px)) {
@@ -538,10 +552,18 @@ body {
 
 .products-main--home {
   max-width: min(1680px, 100%);
+  width: 100%;
   margin-inline: auto;
   padding-top: 0.5rem;
   padding-bottom: 4rem;
   padding-inline: max(0.5rem, env(safe-area-inset-left)) max(0.5rem, env(safe-area-inset-right));
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .products-main--home {
+    padding-inline: max(0.25rem, env(safe-area-inset-left)) max(0.25rem, env(safe-area-inset-right));
+  }
 }
 
 /* Home: image-only tiles (no title/price under thumbnail) */
@@ -964,7 +986,9 @@ body {
 
 @media (max-width: 480px) {
   .hero {
-    min-height: clamp(14rem, 36vh, 22rem);
+    /* svh：移动端视口高度更稳，首屏更接近「满一屏」 */
+    min-height: clamp(15rem, 52vh, 28rem);
+    min-height: clamp(15rem, 52svh, 28rem);
     background-position: 82% center;
     background-size: cover;
   }
