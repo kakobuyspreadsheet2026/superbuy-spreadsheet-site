@@ -56,6 +56,9 @@
     );
   }
 
+  /** iOS Safari: `position:fixed` inside `<details>` / under `.hero` can paint below composited layers; host on `body` while open. */
+  const PANEL_Z = "2147483000";
+
   function placeOpenDropdownPanel() {
     const det = document.querySelector(
       "#topbar-cats details.topbar-cats__dropdown[open], #hero-cats details.topbar-cats__dropdown[open]",
@@ -75,22 +78,47 @@
     left = Math.max(inset, Math.min(left, vw - inset - maxPanelW));
 
     panel.style.setProperty("position", "fixed");
-    panel.style.setProperty("z-index", "10001");
+    panel.style.setProperty("z-index", PANEL_Z);
     panel.style.setProperty("top", `${Math.round(r.bottom + 6)}px`);
     panel.style.setProperty("left", `${Math.round(left)}px`);
     panel.style.setProperty("right", "auto");
     panel.style.setProperty("width", `${Math.round(maxPanelW)}px`);
     panel.style.setProperty("max-width", `${Math.round(maxPanelW)}px`);
     panel.style.setProperty("box-sizing", "border-box");
+    panel.style.setProperty("-webkit-transform", "translateZ(0)");
+    panel.style.setProperty("transform", "translateZ(0)");
+  }
+
+  function restorePanelIntoDetails(details, panel) {
+    if (!panel || !details) return;
+    if (panel.parentNode === document.body) {
+      details.appendChild(panel);
+    }
+  }
+
+  function portalPanelToBodyIfHero(details, panel) {
+    const hero = document.getElementById("hero-cats");
+    if (!hero || !hero.contains(details) || !MQ.matches) return;
+    if (panel.parentNode === document.body) return;
+    document.body.appendChild(panel);
   }
 
   function wireDropdownPanelLayer(details, panel) {
     details.addEventListener("toggle", () => {
       if (!details.open) {
         panel.removeAttribute("style");
+        restorePanelIntoDetails(details, panel);
       } else {
+        portalPanelToBodyIfHero(details, panel);
         placeOpenDropdownPanel();
-        requestAnimationFrame(placeOpenDropdownPanel);
+        requestAnimationFrame(() => {
+          placeOpenDropdownPanel();
+          requestAnimationFrame(() => {
+            placeOpenDropdownPanel();
+            setTimeout(placeOpenDropdownPanel, 0);
+            setTimeout(placeOpenDropdownPanel, 50);
+          });
+        });
       }
     });
   }
@@ -102,6 +130,10 @@
     const onMove = () => placeOpenDropdownPanel();
     window.addEventListener("resize", onMove);
     window.addEventListener("scroll", onMove, true);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", onMove);
+      window.visualViewport.addEventListener("scroll", onMove);
+    }
   }
 
   function buildDropdown() {
@@ -119,6 +151,7 @@
       a.addEventListener("click", () => {
         details.open = false;
         panel.removeAttribute("style");
+        restorePanelIntoDetails(details, panel);
       });
       panel.appendChild(a);
     });
@@ -142,12 +175,16 @@
       categoriesRoot = buildDropdown();
     }
 
+    const panel = categoriesRoot.querySelector(".topbar-cats__dropdown-panel");
+    if (panel && panel.parentNode === document.body) {
+      categoriesRoot.appendChild(panel);
+    }
+
     const useHero = Boolean(hero && MQ.matches);
     const target = useHero ? hero : top;
     const other = useHero ? top : hero;
 
     if (categoriesRoot.open) categoriesRoot.open = false;
-    const panel = categoriesRoot.querySelector(".topbar-cats__dropdown-panel");
     if (panel) panel.removeAttribute("style");
 
     if (other) other.textContent = "";
