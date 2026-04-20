@@ -65,7 +65,10 @@
     );
     if (!det) return;
     const summary = det.querySelector("summary");
-    const panel = det.querySelector(".topbar-cats__dropdown-panel");
+    /** After `portalPanelToBodyIfHero`, the panel is no longer under `det` — still the only `.topbar-cats__dropdown-panel` on the page. */
+    const panel =
+      det.querySelector(".topbar-cats__dropdown-panel") ||
+      document.querySelector(".topbar-cats__dropdown-panel");
     if (!summary || !panel) return;
     const r = summary.getBoundingClientRect();
     const vw = window.innerWidth;
@@ -109,6 +112,8 @@
         panel.removeAttribute("style");
         restorePanelIntoDetails(details, panel);
       } else {
+        /* Position while panel is still inside `details`, then move to body (iOS) — keeps first paint valid. */
+        placeOpenDropdownPanel();
         portalPanelToBodyIfHero(details, panel);
         placeOpenDropdownPanel();
         requestAnimationFrame(() => {
