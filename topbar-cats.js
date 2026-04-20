@@ -80,16 +80,24 @@
     let left = centerX - maxPanelW / 2;
     left = Math.max(inset, Math.min(left, vw - inset - maxPanelW));
 
-    panel.style.setProperty("position", "fixed");
-    panel.style.setProperty("z-index", PANEL_Z);
-    panel.style.setProperty("top", `${Math.round(r.bottom + 6)}px`);
-    panel.style.setProperty("left", `${Math.round(left)}px`);
-    panel.style.setProperty("right", "auto");
-    panel.style.setProperty("width", `${Math.round(maxPanelW)}px`);
-    panel.style.setProperty("max-width", `${Math.round(maxPanelW)}px`);
-    panel.style.setProperty("box-sizing", "border-box");
-    panel.style.setProperty("-webkit-transform", "translateZ(0)");
-    panel.style.setProperty("transform", "translateZ(0)");
+    /**
+     * When the panel is under `document.body`, stylesheet `top: calc(100% + …)` + `position:absolute`
+     * resolves `%` against the wrong containing block on WebKit → ~100vh → menu jumps to viewport bottom.
+     * `!important` beats that rule so fixed coordinates always apply.
+     */
+    const imp = "important";
+    const topPx = Math.round(r.bottom + 6);
+    panel.style.setProperty("position", "fixed", imp);
+    panel.style.setProperty("z-index", PANEL_Z, imp);
+    panel.style.setProperty("top", `${topPx}px`, imp);
+    panel.style.setProperty("left", `${Math.round(left)}px`, imp);
+    panel.style.setProperty("right", "auto", imp);
+    panel.style.setProperty("bottom", "auto", imp);
+    panel.style.setProperty("width", `${Math.round(maxPanelW)}px`, imp);
+    panel.style.setProperty("max-width", `${Math.round(maxPanelW)}px`, imp);
+    panel.style.setProperty("box-sizing", "border-box", imp);
+    panel.style.setProperty("-webkit-transform", "translateZ(0)", imp);
+    panel.style.setProperty("transform", "translateZ(0)", imp);
   }
 
   function restorePanelIntoDetails(details, panel) {
